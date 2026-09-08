@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:surface-shadcn:contact-example",
+  "title": "Contact",
+  "description": "Application-specific contact editor example. Email composes the installed pragmatic contact scalar; this is not a replacement contact domain schema.",
+  "type": "object",
+  "required": ["name", "email", "relationship", "updates", "location", "tags"],
+  "properties": {
+    "name": { "type": "string", "title": "Full name", "minLength": 2 },
+    "email": {
+      "$ref": "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/email"
+    },
+    "relationship": {
+      "type": "string",
+      "title": "Relationship",
+      "enum": ["Client", "Partner", "Supplier"]
+    },
+    "updates": {
+      "type": "boolean",
+      "title": "Receive project updates",
+      "default": true
+    },
+    "location": {
+      "type": "object",
+      "title": "Location",
+      "required": ["city"],
+      "properties": {
+        "city": { "type": "string", "title": "City", "minLength": 1 },
+        "timezone": {
+          "type": "string",
+          "title": "Time zone",
+          "enum": ["Australia/Sydney", "Europe/London", "America/New_York"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "tags": {
+      "type": "array",
+      "title": "Tags",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "maxItems": 4
+    },
+    "notes": { "type": "string", "title": "Notes", "maxLength": 500 }
+  },
+  "additionalProperties": false
+}

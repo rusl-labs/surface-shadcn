@@ -1,0 +1,55 @@
+{
+  "name": "@rusl-labs/surface-shadcn",
+  "version": "0.1.0",
+  "description": "Surface behavior and locally owned shadcn renderers.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "example"
+  ],
+  "files": [
+    "dist",
+    "schemas/rusl/surface.shadcn.schema.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": "./schemas/rusl/surface.shadcn.schema.json"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "build:registry": "shadcn build --output public/r",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test src",
+    "check": "bun run typecheck && bun run test && bun run build && bun run build:registry && bun run build:example",
+    "prepack": "bun run build",
+    "dev": "vite --config example/vite.config.ts",
+    "build:example": "vite build --config example/vite.config.ts"
+  },
+  "peerDependencies": {
+    "@rusl-labs/surface": "0.1.0",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@rusl-labs/surface": "0.1.0",
+    "@rusl-labs/surface-ajv": "0.1.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/bun": "^1.4.1",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "shadcn": "^4.0.0",
+    "tailwindcss": "^4.1.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.0.0"
+  }
+}

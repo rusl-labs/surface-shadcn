@@ -1,0 +1,56 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "urn:surface-shadcn:contact-example",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "fields": [
+        {
+          "label": "Contact details",
+          "fields": [
+            { "name": "name", "label": "Full name" },
+            { "name": "relationship", "label": "Relationship" },
+            {
+              "name": "email",
+              "label": "Work email",
+              "description": "Used for project correspondence."
+            }
+          ]
+        },
+        {
+          "label": "Workspace",
+          "fields": [
+            {
+              "name": "location",
+              "label": "Location",
+              "fields": [
+                { "name": "city", "label": "City" },
+                { "name": "timezone", "label": "Time zone" }
+              ]
+            },
+            {
+              "name": "tags",
+              "label": "Tags",
+              "itemLabel": "tag",
+              "addLabel": "Add tag"
+            },
+            { "name": "updates", "label": "Receive project updates" }
+          ]
+        },
+        {
+          "name": "notes",
+          "label": "Notes",
+          "input": {
+            "widget": {
+              "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea",
+              "name": "textarea",
+              "options": { "rows": 3 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

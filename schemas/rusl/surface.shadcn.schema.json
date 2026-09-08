@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn",
+  "title": "Surface shadcn widget vocabulary",
+  "description": "Locally developed widget contracts for @rusl-labs/surface-shadcn. Existing input and email widgets retain the surface.default-kit vocabulary.",
+  "$ref": "#/$defs/textarea",
+  "$defs": {
+    "textarea": {
+      "title": "Multiline text",
+      "description": "Edits a string with the consuming application's local shadcn Textarea. Display mode renders the text without changing its wire value.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "textarea" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea"
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "rows": { "type": "integer", "minimum": 1, "description": "Visible text rows; does not constrain the string length." }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "surface-shadcn",
+  "homepage": "https://rusl.com",
+  "items": [
+    {
+      "name": "surface",
+      "type": "registry:item",
+      "title": "Surface shadcn kit",
+      "description": "Schema-driven input and display using your application's local shadcn Base UI components.",
+      "dependencies": [
+        "@rusl-labs/surface-shadcn@0.1.0",
+        "@rusl-labs/surface@0.1.0"
+      ],
+      "registryDependencies": [
+        "field",
+        "input",
+        "textarea",
+        "checkbox",
+        "native-select",
+        "button",
+        "alert"
+      ],
+      "files": [
+        {
+          "path": "registry/surface/composition.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/composition.tsx"
+        },
+        {
+          "path": "registry/surface/kit.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/kit.tsx"
+        },
+        {
+          "path": "registry/surface/root.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/root.tsx"
+        },
+        {
+          "path": "registry/surface/object.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/object.tsx"
+        },
+        {
+          "path": "registry/surface/array.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/array.tsx"
+        },
+        {
+          "path": "registry/surface/chrome.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/chrome.tsx"
+        },
+        {
+          "path": "registry/surface/string.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/string.tsx"
+        },
+        {
+          "path": "registry/surface/textarea.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/textarea.tsx"
+        },
+        {
+          "path": "registry/surface/email.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/email.tsx"
+        },
+        {
+          "path": "registry/surface/boolean.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/boolean.tsx"
+        },
+        {
+          "path": "registry/surface/enum.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/enum.tsx"
+        },
+        {
+          "path": "registry/surface/number.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/number.tsx"
+        },
+        {
+          "path": "registry/surface/const.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/const.tsx"
+        },
+        {
+          "path": "registry/surface/fallback.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/fallback.tsx"
+        }
+      ]
+    }
+  ]
+}

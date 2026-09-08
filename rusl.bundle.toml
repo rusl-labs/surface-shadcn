@@ -1,0 +1,7 @@
+[rusl]
+
+[rusl.resources]
+"rusl/schemas/surface.annotation" = ">=0.1.0"
+"rusl/schemas/surface.default-kit" = ">=0.1.0"
+"rusl/schemas/surface.shadcn" = { version = "*", dev = true }
+"pragmatic/schemas/contact.scalars" = ">=0.1.0"
