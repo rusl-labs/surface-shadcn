@@ -12,6 +12,12 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { widgetString } from "./widget";
 
 type Orientation = "vertical" | "horizontal";
 
@@ -25,18 +31,21 @@ type Orientation = "vertical" | "horizontal";
  *
  * When `showLabels` is false (a parent description-list row already owns the
  * label) the control renders bare — no `Field` wrapper, no duplicate label —
- * followed only by its error list when there is one.
+ * followed by its description and error list when present.
  */
 export function FieldChrome({
   state: fs,
   children,
-  orientation = "vertical",
+  orientation,
 }: {
   readonly state: FieldState;
   readonly children: ReactNode;
   readonly orientation?: Orientation;
 }): ReactElement {
-  const { mode } = useSurface();
+  const { mode, helpers, entry } = useSurface();
+  const tooltip =
+    widgetString(entry?.widget, "text") ??
+    (entry?.widget?.name === "tooltip" ? fs.description : undefined);
 
   const errors =
     fs.issues.length > 0 ? (
@@ -45,19 +54,22 @@ export function FieldChrome({
         errors={fs.issues.map((issue) => ({ message: issue.message }))}
       />
     ) : null;
+  const description =
+    fs.description.length > 0 ? (
+      <FieldDescription id={`${fs.controlId}-description`}>
+        {fs.description}
+      </FieldDescription>
+    ) : null;
 
-  if (!fs.showLabels) {
-    return (
-      <>
-        {children}
-        {errors}
-      </>
-    );
-  }
-
-  return (
+  const control = !fs.showLabels ? (
+    <>
+      {children}
+      {description}
+      {errors}
+    </>
+  ) : (
     <Field
-      orientation={orientation}
+      orientation={orientation ?? helpers?.direction() ?? "vertical"}
       data-invalid={fs.invalid ? true : undefined}
     >
       {fs.label.length > 0 ? (
@@ -66,13 +78,18 @@ export function FieldChrome({
         </FieldLabel>
       ) : null}
       {children}
-      {fs.description.length > 0 ? (
-        <FieldDescription id={`${fs.controlId}-description`}>
-          {fs.description}
-        </FieldDescription>
-      ) : null}
+      {description}
       {errors}
     </Field>
+  );
+  if (!tooltip) return control;
+  return (
+    <Tooltip>
+      <TooltipTrigger render={<span className="inline-flex w-full" />}>
+        {control}
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -94,12 +111,12 @@ export function SectionChrome({
 }): ReactElement {
   const { labels } = useSurface();
   const named =
-    labels !== false &&
-    (label.length > 0 || (description !== undefined && description.length > 0));
+    (labels !== false && label.length > 0) ||
+    (description !== undefined && description.length > 0);
   if (!named) return <>{children}</>;
   return (
     <FieldSet className="min-w-0">
-      {label.length > 0 ? (
+      {labels !== false && label.length > 0 ? (
         <FieldLegend variant="label">{label}</FieldLegend>
       ) : null}
       {description !== undefined && description.length > 0 ? (

@@ -1,0 +1,145 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/us-address",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "label": "US address",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        { "name": "street1", "label": "Street" },
+        { "name": "street2", "label": "Street 2" },
+        { "name": "city", "label": "City" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "ZIP code" },
+        { "name": "countryCode", "label": "Country" },
+        { "rest": true }
+      ]
+    },
+    "compact": {
+      "label": "US address",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        { "name": "street1", "label": "Street" },
+        { "name": "city", "label": "City" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "ZIP" },
+        { "name": "countryCode", "label": "Country" }
+      ]
+    },
+    "detail": {
+      "label": "US postal address",
+      "layout": "stack",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        {
+          "label": "Street",
+          "fields": [
+            {
+              "name": "street1",
+              "label": "Street address",
+              "description": "Primary delivery line (USPS Pub 28 recommends 64 characters or fewer for presentation)."
+            },
+            {
+              "name": "street2",
+              "label": "Apt, suite, unit",
+              "description": "Optional secondary delivery line."
+            }
+          ]
+        },
+        {
+          "label": "Locality",
+          "fields": [
+            { "name": "city", "label": "City" },
+            {
+              "name": "region",
+              "label": "State",
+              "description": "ISO 3166-2:US subdivision code, e.g. CA."
+            },
+            {
+              "name": "postalCode",
+              "label": "ZIP code",
+              "description": "ZIP or ZIP+4. Format only; not cross-checked against the state."
+            },
+            { "name": "countryCode", "label": "Country" }
+          ]
+        },
+        {
+          "label": "Address metadata",
+          "fields": [
+            {
+              "name": "contexts",
+              "label": "Contexts",
+              "itemLabel": "context",
+              "addLabel": "Add context",
+              "description": "Free-text roles this address serves, e.g. home, billing."
+            },
+            {
+              "name": "preference",
+              "label": "Preference",
+              "description": "Rank among a person's addresses; 1 = most preferred. Absent means unspecified."
+            },
+            {
+              "name": "geo",
+              "label": "Geo point",
+              "description": "Optional GeoJSON Point for the address location."
+            }
+          ]
+        },
+        { "rest": true }
+      ]
+    },
+    "identity": {
+      "label": "US address",
+      "rest": "omit",
+      "fields": [
+        { "name": "street1", "label": "Street" },
+        { "name": "city", "label": "City" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "ZIP" }
+      ]
+    },
+    "row": {
+      "label": "US address",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "street1", "label": "Street" },
+        { "name": "city", "label": "City" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "ZIP" }
+      ]
+    },
+    "card": {
+      "label": "US postal address",
+      "layout": "stack",
+      "fields": [
+        {
+          "label": "Street",
+          "fields": [
+            { "name": "street1", "label": "Street address" },
+            { "name": "street2", "label": "Apt, suite, unit" }
+          ]
+        },
+        {
+          "label": "Locality",
+          "fields": [
+            { "name": "city", "label": "City" },
+            {
+              "name": "region",
+              "label": "State",
+              "description": "ISO 3166-2:US subdivision code."
+            },
+            { "name": "postalCode", "label": "ZIP code" },
+            { "name": "countryCode", "label": "Country" }
+          ]
+        },
+        { "rest": true }
+      ]
+    }
+  }
+}

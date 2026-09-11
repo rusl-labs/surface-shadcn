@@ -2,9 +2,237 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn",
   "title": "Surface shadcn widget vocabulary",
-  "description": "Locally developed widget contracts for @rusl-labs/surface-shadcn. Existing input and email widgets retain the surface.default-kit vocabulary.",
-  "$ref": "#/$defs/textarea",
+  "description": "The complete widget vocabulary for @rusl-labs/surface-shadcn: every widget this kit renders, presentation only, with no new wire shapes. Every widget's `$kind` is a surface.shadcn `$defs` URI. A top-level widget key always wins over the matching `options.*` key. Not widgets: dd/dt are view layout props, and input-group is renderer composition (the phone and money renderers already compose their own input groups).",
+  "anyOf": [
+    { "$ref": "#/$defs/input" },
+    { "$ref": "#/$defs/email" },
+    { "$ref": "#/$defs/textarea" },
+    { "$ref": "#/$defs/tel" },
+    { "$ref": "#/$defs/money" },
+    { "$ref": "#/$defs/media" },
+    { "$ref": "#/$defs/date" },
+    { "$ref": "#/$defs/datetime" },
+    { "$ref": "#/$defs/table" },
+    { "$ref": "#/$defs/combobox" },
+    { "$ref": "#/$defs/radio-group" },
+    { "$ref": "#/$defs/toggle-group" },
+    { "$ref": "#/$defs/switch" },
+    { "$ref": "#/$defs/code" },
+    { "$ref": "#/$defs/list" },
+    { "$ref": "#/$defs/carousel" },
+    { "$ref": "#/$defs/accordion" },
+    { "$ref": "#/$defs/collapsible" },
+    { "$ref": "#/$defs/tooltip" },
+    { "$ref": "#/$defs/separator" }
+  ],
   "$defs": {
+    "binding": {
+      "title": "Value binding",
+      "description": "A dotted path on this node's data, a {{template}}, or a fixed literal. String shorthand: dotted path if no braces, template if {{…}} is present, literal otherwise.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Dotted path on this node's data."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["template"],
+          "properties": {
+            "template": {
+              "type": "string",
+              "description": "`{{a.b}}` interpolation over record data."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["literal"],
+          "properties": { "literal": { "type": "string" } }
+        }
+      ]
+    },
+    "image-dimension": {
+      "description": "Positive integer pixels for the HTML width/height attribute, or a binding resolving to that number. Missing dimensions are not invented.",
+      "anyOf": [
+        { "type": "integer", "minimum": 1 },
+        { "$ref": "#/$defs/binding" }
+      ]
+    },
+    "input": {
+      "title": "Text input",
+      "description": "Edits a string with the local shadcn Input. Top-level `placeholder`, `type`, and `autocomplete` win over `options.*`. `type` is the HTML input type (text, password, email, search, tel, url). Display renders the string as text.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "input" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/input"
+        },
+        "placeholder": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["text", "password", "email", "search", "tel", "url"]
+        },
+        "autocomplete": { "type": "string" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "placeholder": { "type": "string" },
+            "type": {
+              "type": "string",
+              "enum": ["text", "password", "email", "search", "tel", "url"]
+            },
+            "autocomplete": { "type": "string" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "email": {
+      "title": "Email",
+      "description": "Edits an email string with the local shadcn Input (`type=email`). Display is a mailto: link. Top-level `placeholder` and `autocomplete` win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "email" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/email"
+        },
+        "placeholder": { "type": "string" },
+        "autocomplete": { "type": "string" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "placeholder": { "type": "string" },
+            "autocomplete": { "type": "string" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "media": {
+      "title": "Image media",
+      "description": "Display-only image. `src` and `alt` are bindings (default: the string value or `url` / `alt` on a record). Width and height become HTML attributes and reserve aspect ratio. `fit` is CSS object-fit; `maxHeight` caps the rendered height. This kit supports images, not video/audio or uploads. The registered card view wraps a local shadcn Card. Top-level keys win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "media" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/media"
+        },
+        "src": { "$ref": "#/$defs/binding" },
+        "alt": { "$ref": "#/$defs/binding" },
+        "width": { "$ref": "#/$defs/image-dimension" },
+        "height": { "$ref": "#/$defs/image-dimension" },
+        "fit": { "type": "string", "enum": ["cover", "contain"] },
+        "maxHeight": { "$ref": "#/$defs/image-dimension" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "src": { "$ref": "#/$defs/binding" },
+            "alt": { "$ref": "#/$defs/binding" },
+            "width": { "$ref": "#/$defs/image-dimension" },
+            "height": { "$ref": "#/$defs/image-dimension" },
+            "fit": { "type": "string", "enum": ["cover", "contain"] },
+            "maxHeight": { "$ref": "#/$defs/image-dimension" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "currency-list": {
+      "type": "array",
+      "description": "Restrict the currency picker to these ISO 4217 alphabetic codes, offered in this order (deduped, matched case-insensitively). Only known convertible codes are shown, always intersected with the money `currency` schema's enum. Omit for every convertible currency; [] offers none.",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3
+      }
+    },
+    "money": {
+      "title": "Money presentation",
+      "description": "Presentation options for the canonical money renderer (an amount in minor units plus an ISO 4217 currency). Adds a currency-picker allowlist without changing the money wire value. Top-level `currencies` takes precedence over `options.currencies`. Offered codes are always intersected with the `currency` schema's enum; a `currency` const fixes the currency and hides the picker. Omit `currencies` for every convertible currency, or use [] to offer none. Filtering is presentation only: an already-stored currency outside the list stays visible and unchanged, and is never offered, converted, or cleared.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "money" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/money"
+        },
+        "currencies": { "$ref": "#/$defs/currency-list" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "currencies": { "$ref": "#/$defs/currency-list" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "phone-format": {
+      "type": "string",
+      "enum": ["national", "international", "e164"],
+      "description": "Display text only. National uses the number's country; international is the default; e164 shows the canonical compact number. Storage and tel: links remain E.164."
+    },
+    "tel": {
+      "title": "Telephone",
+      "description": "Edits a phone number as E.164. Input is a country combobox plus a national/international draft. Display is a tel: link. `format` is display text only (national, international, e164). `defaultCountry` is ISO 3166-1 alpha-2. `countries` restricts the picker. `showCountry` defaults true. Top-level keys win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "tel" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/tel"
+        },
+        "placeholder": { "type": "string" },
+        "autocomplete": { "type": "string" },
+        "defaultCountry": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2
+        },
+        "countries": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2, "maxLength": 2 }
+        },
+        "showCountry": { "type": "boolean" },
+        "format": { "$ref": "#/$defs/phone-format" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "placeholder": { "type": "string" },
+            "autocomplete": { "type": "string" },
+            "defaultCountry": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "countries": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 2, "maxLength": 2 }
+            },
+            "showCountry": { "type": "boolean" },
+            "format": { "$ref": "#/$defs/phone-format" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
     "textarea": {
       "title": "Multiline text",
       "description": "Edits a string with the consuming application's local shadcn Textarea. Display mode renders the text without changing its wire value.",
@@ -17,7 +245,434 @@
         "options": {
           "type": "object",
           "properties": {
-            "rows": { "type": "integer", "minimum": 1, "description": "Visible text rows; does not constrain the string length." }
+            "rows": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Visible text rows; does not constrain the string length."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "orientation": {
+      "type": "string",
+      "enum": ["horizontal", "vertical"],
+      "description": "Layout axis for the shadcn primitive. Presentation only."
+    },
+    "calendar-caption": {
+      "type": "string",
+      "enum": ["label", "dropdown", "dropdown-months", "dropdown-years"],
+      "description": "shadcn Calendar month/year navigation. Display chrome only; the stored date is unchanged."
+    },
+    "item-action": {
+      "type": "object",
+      "description": "Add or Remove chrome. appearance label is text only (default); icon is the lucide icon with the label as the accessible name; both shows icon and text; tooltip is icon-only with the label in a Tooltip. icon: plus, trash, or x. label overrides addLabel / the default Remove text. Presentation only.",
+      "properties": {
+        "appearance": {
+          "type": "string",
+          "enum": ["label", "icon", "both", "tooltip"]
+        },
+        "label": { "type": "string", "minLength": 1 },
+        "icon": { "type": "string", "enum": ["plus", "trash", "x"] }
+      },
+      "additionalProperties": false
+    },
+    "date": {
+      "title": "Date picker",
+      "description": "Picks a calendar date (YYYY-MM-DD) with the local shadcn Calendar in a Popover. Display is localized plain text. `min` and `max` are inclusive YYYY-MM-DD bounds on the calendar. `captionLayout` selects month/year navigation. Top-level keys win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "date" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/date"
+        },
+        "min": { "type": "string", "format": "date" },
+        "max": { "type": "string", "format": "date" },
+        "captionLayout": { "$ref": "#/$defs/calendar-caption" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "string", "format": "date" },
+            "max": { "type": "string", "format": "date" },
+            "captionLayout": { "$ref": "#/$defs/calendar-caption" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "datetime": {
+      "title": "Date-time picker",
+      "description": "Picks a date and time; the wire value is an RFC 3339 local timestamp (`YYYY-MM-DDTHH:mm` or with seconds). `min` and `max` bound the calendar date. `showSeconds` adds seconds to the time control. `captionLayout` selects month/year navigation. Top-level keys win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "datetime" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/datetime"
+        },
+        "min": { "type": "string", "format": "date" },
+        "max": { "type": "string", "format": "date" },
+        "showSeconds": { "type": "boolean" },
+        "captionLayout": { "$ref": "#/$defs/calendar-caption" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "string", "format": "date" },
+            "max": { "type": "string", "format": "date" },
+            "showSeconds": { "type": "boolean" },
+            "captionLayout": { "$ref": "#/$defs/calendar-caption" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "table-column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Property name or dotted path for the cell value."
+        },
+        "label": {
+          "type": "string",
+          "description": "Header text. Defaults to the field name."
+        },
+        "align": {
+          "type": "string",
+          "enum": ["left", "center", "right"]
+        },
+        "sortable": {
+          "type": "boolean",
+          "description": "Header click toggles display sort. Default true."
+        }
+      }
+    },
+    "table": {
+      "title": "Data table",
+      "description": "Array widget for an array of objects. Display is a shadcn Table; sort reorders the display only. Input uses the list editor with optional add/remove chrome. `columns` names the headers; omit to infer from row keys. `sort` is the initial display sort. Top-level keys win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "table" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/table"
+        },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/table-column" }
+        },
+        "sort": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "field": { "type": "string", "minLength": 1 },
+            "direction": { "type": "string", "enum": ["asc", "desc"] }
+          }
+        },
+        "add": { "$ref": "#/$defs/item-action" },
+        "remove": { "$ref": "#/$defs/item-action" },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/table-column" }
+            },
+            "sort": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "field": { "type": "string", "minLength": 1 },
+                "direction": { "type": "string", "enum": ["asc", "desc"] }
+              }
+            },
+            "add": { "$ref": "#/$defs/item-action" },
+            "remove": { "$ref": "#/$defs/item-action" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "combobox": {
+      "title": "Combobox",
+      "description": "Field widget for choosing one value from a long enum or suggested string set. Renders the local shadcn Command inside a Popover with type-ahead search; the stored value is the chosen option. Top-level `placeholder` wins over `options.placeholder`; `options.searchPlaceholder` and `options.emptyText` label the search field and the no-match state.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "combobox" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/combobox"
+        },
+        "placeholder": { "type": "string" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "placeholder": { "type": "string" },
+            "searchPlaceholder": { "type": "string" },
+            "emptyText": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "radio-group": {
+      "title": "Radio group",
+      "description": "Field widget for choosing one value from a small enum (roughly 2–7 options). Renders the local shadcn RadioGroup. Top-level `orientation` wins over `options.orientation`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "radio-group" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/radio-group"
+        },
+        "orientation": { "$ref": "#/$defs/orientation" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "orientation": { "$ref": "#/$defs/orientation" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "toggle-group": {
+      "title": "Toggle group",
+      "description": "Field widget for choosing one value from a very small enum (roughly 2–5 options) shown as a shadcn ToggleGroup button row (the button-group style). Top-level `variant` wins over `options.variant`; `options.size` sets the button size.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "toggle-group" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/toggle-group"
+        },
+        "variant": {
+          "type": "string",
+          "enum": ["default", "outline"]
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "variant": {
+              "type": "string",
+              "enum": ["default", "outline"]
+            },
+            "size": {
+              "type": "string",
+              "enum": ["sm", "default", "lg"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "switch": {
+      "title": "Switch",
+      "description": "Binary on/off control. Use on a boolean, or on an enum with two values. `on` is the wire value when checked; `off` when unchecked. Top-level keys win over `options.*`. Defaults: boolean true/false; two-value enum uses the second member as on and the first as off.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "switch" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/switch"
+        },
+        "on": true,
+        "off": true,
+        "options": {
+          "type": "object",
+          "properties": {
+            "on": true,
+            "off": true
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "code": {
+      "title": "Code editor",
+      "description": "Opt-in CodeMirror editor. Open objects (additionalProperties maps) default to a JSON textarea; set this widget to use a highlighted editor. Object schemas store a JSON object on the wire; string schemas store the source text. Top-level `language` (alias `format`) wins over `options.*`. Common languages: json, javascript, typescript, html, css, markdown, yaml. Unknown names fall back to plain text.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "code" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/code"
+        },
+        "language": { "type": "string", "minLength": 1 },
+        "format": { "type": "string", "minLength": 1 },
+        "options": {
+          "type": "object",
+          "properties": {
+            "language": { "type": "string", "minLength": 1 },
+            "format": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "list": {
+      "title": "Item list",
+      "description": "Array widget: renders each array item as a stacked shadcn list row rather than a table. Top-level `marker` wins over `options.marker` and selects the item marker.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "list" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/list"
+        },
+        "marker": {
+          "type": "string",
+          "enum": ["disc", "decimal", "none"]
+        },
+        "add": { "$ref": "#/$defs/item-action" },
+        "remove": { "$ref": "#/$defs/item-action" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "marker": {
+              "type": "string",
+              "enum": ["disc", "decimal", "none"]
+            },
+            "add": { "$ref": "#/$defs/item-action" },
+            "remove": { "$ref": "#/$defs/item-action" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "carousel": {
+      "title": "Carousel",
+      "description": "Array widget: renders array items — typically media — in the local shadcn Carousel, one slide at a time. Presentation only; the array order stays the wire order. Top-level `orientation` wins over `options.orientation`; `options.loop` wraps past the ends.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "carousel" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/carousel"
+        },
+        "orientation": { "$ref": "#/$defs/orientation" },
+        "add": { "$ref": "#/$defs/item-action" },
+        "remove": { "$ref": "#/$defs/item-action" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "orientation": { "$ref": "#/$defs/orientation" },
+            "loop": { "type": "boolean" },
+            "add": { "$ref": "#/$defs/item-action" },
+            "remove": { "$ref": "#/$defs/item-action" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "accordion": {
+      "title": "Accordion",
+      "description": "Object/section widget: renders each immediate child section or property as a shadcn Accordion panel. Top-level `type` wins over `options.type` (`single` or `multiple` open panels); `options.collapsible` lets a `single` accordion close its open panel.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "accordion" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/accordion"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["single", "multiple"]
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["single", "multiple"]
+            },
+            "collapsible": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "collapsible": {
+      "title": "Collapsible",
+      "description": "Object/section widget: wraps the child fields in one shadcn Collapsible disclosure. Top-level `defaultOpen` wins over `options.defaultOpen`; `options.label` sets the trigger text.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "collapsible" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/collapsible"
+        },
+        "defaultOpen": { "type": "boolean" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "defaultOpen": { "type": "boolean" },
+            "label": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "tooltip": {
+      "title": "Tooltip",
+      "description": "Field chrome: wraps a field's normal control with a shadcn Tooltip hint and does not replace the control or its stored value. Top-level `text` wins over `options.text` for the hint content; `options.side` places the tooltip.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "tooltip" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/tooltip"
+        },
+        "text": { "type": "string" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "side": {
+              "type": "string",
+              "enum": ["top", "right", "bottom", "left"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "separator": {
+      "title": "Separator",
+      "description": "Object/section chrome: draws a shadcn Separator between children and renders no field value. Top-level `orientation` wins over `options.orientation`; `options.label` prints an optional inline caption.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "separator" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/separator"
+        },
+        "orientation": { "$ref": "#/$defs/orientation" },
+        "options": {
+          "type": "object",
+          "properties": {
+            "orientation": { "$ref": "#/$defs/orientation" },
+            "label": { "type": "string" }
           },
           "additionalProperties": false
         }

@@ -6,9 +6,10 @@ import {
   useSurface,
   type SurfaceRootProps,
 } from "@rusl-labs/surface";
-import { useFormActions } from "@rusl-labs/surface-shadcn";
+import { FormDraftScope, useFormActions } from "@rusl-labs/surface-shadcn";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 /**
  * Kit root shell. In input mode it wraps the resolved body with Reset / Save
@@ -22,7 +23,24 @@ import { Button } from "@/components/ui/button";
  * depending on any other kit's markup or CSS.
  */
 export function ShadcnRoot({ children }: SurfaceRootProps): ReactElement {
-  const { mode, validity, formSubmitted } = useSurface();
+  const { mode } = useSurface();
+  return (
+    <TooltipProvider>
+      {mode !== "input" ? (
+        children
+      ) : (
+        <FormDraftScope>
+          <RootBody>{children}</RootBody>
+        </FormDraftScope>
+      )}
+    </TooltipProvider>
+  );
+}
+
+function RootBody({
+  children,
+}: Pick<SurfaceRootProps, "children">): ReactElement {
+  const { validity, formSubmitted } = useSurface();
   const { save, reset, pending } = useFormActions();
   const shellRef = useRef<HTMLDivElement>(null);
   const prevSubmitted = useRef(false);
@@ -52,7 +70,7 @@ export function ShadcnRoot({ children }: SurfaceRootProps): ReactElement {
       }
       shell
         .querySelector<HTMLElement>(
-          "input:not([type=hidden]):not([readonly]), select, textarea",
+          "input:not([type=hidden]):not([readonly]), [role=combobox]:not(:disabled), textarea",
         )
         ?.focus();
     });
@@ -60,8 +78,6 @@ export function ShadcnRoot({ children }: SurfaceRootProps): ReactElement {
       cancelAnimationFrame(frame);
     };
   }, [formSubmitted, validity?.issues]);
-
-  if (mode !== "input") return <>{children}</>;
 
   return (
     <div
@@ -95,7 +111,6 @@ export function ShadcnRoot({ children }: SurfaceRootProps): ReactElement {
         <Button
           type="button"
           variant="outline"
-          disabled={pending}
           onClick={() => {
             reset();
           }}

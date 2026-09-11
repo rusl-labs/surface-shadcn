@@ -1,0 +1,128 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/external-reference",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "fields": [
+        { "name": "label", "label": "Label" },
+        { "name": "url", "label": "URL" },
+        { "name": "system", "label": "System" },
+        { "name": "id", "label": "Record ID" },
+        { "name": "publiclyAccessible", "label": "Publicly accessible" },
+        { "rest": true }
+      ]
+    },
+    "compact": {
+      "label": "Compact",
+      "description": "Provide a URL, or a system + id pair \u2014 at least one path must be filled.",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        {
+          "name": "url",
+          "label": "URL",
+          "input": {
+            "description": "Browser-resolvable link. Fill this OR system + id."
+          },
+          "display": { "label": "Link" }
+        },
+        {
+          "name": "system",
+          "label": "System",
+          "input": {
+            "description": "Foreign system name, e.g. stripe. Requires an id."
+          }
+        },
+        {
+          "name": "id",
+          "label": "Record ID",
+          "input": { "description": "Identifier within that system." }
+        }
+      ]
+    },
+    "detail": {
+      "label": "Detailed",
+      "layout": "stack",
+      "description": "A reference must resolve by browser (url) or by API (system + id) \u2014 keep at least one path complete.",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        {
+          "name": "label",
+          "label": "Display label",
+          "description": "Human-readable name, e.g. \"Stripe customer\"."
+        },
+        {
+          "label": "Browser access",
+          "description": "Fill a URL for a directly openable record.",
+          "fields": [
+            {
+              "name": "url",
+              "label": "URL",
+              "description": "Dereferenceable link to the record."
+            },
+            {
+              "name": "publiclyAccessible",
+              "label": "Public link",
+              "description": "True if the URL opens without authentication."
+            }
+          ]
+        },
+        {
+          "label": "API access",
+          "description": "Or identify the record by system + id.",
+          "fields": [
+            {
+              "name": "system",
+              "label": "System",
+              "description": "Open vocabulary, e.g. stripe, shopify, salesforce."
+            },
+            {
+              "name": "id",
+              "label": "Record ID",
+              "description": "Opaque identifier in that system; requires a system."
+            }
+          ]
+        },
+        { "rest": true }
+      ]
+    },
+    "identity": {
+      "label": "Identity",
+      "rest": "omit",
+      "fields": [
+        { "name": "label", "label": "Label" },
+        { "name": "url", "label": "URL" }
+      ]
+    },
+    "row": {
+      "label": "Row",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "label", "label": "Label" },
+        { "name": "system", "label": "System" },
+        { "name": "url", "label": "URL" }
+      ]
+    },
+    "card": {
+      "label": "Card",
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "Reference",
+          "fields": [
+            { "name": "label", "label": "Label" },
+            { "name": "url", "label": "URL" },
+            { "name": "system", "label": "System" },
+            { "name": "id", "label": "Record ID" },
+            { "name": "publiclyAccessible", "label": "Public link" }
+          ]
+        }
+      ]
+    }
+  }
+}

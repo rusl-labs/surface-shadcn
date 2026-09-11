@@ -28,7 +28,7 @@ export function TextareaInput({ data }: SurfaceProps): ReactElement {
     <FieldChrome state={fs}>
       <Textarea
         id={fs.controlId}
-        aria-label={fs.showLabels ? undefined : fs.label}
+        aria-label={fs.showLabels && fs.label ? undefined : fs.label || "Value"}
         value={value}
         required={fs.required}
         readOnly={fs.readOnly}

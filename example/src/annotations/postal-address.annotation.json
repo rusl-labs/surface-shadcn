@@ -1,0 +1,33 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/postal.address",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "label": "Address",
+      "fields": [{ "rest": true }]
+    },
+    "compact": {
+      "label": "Address",
+      "fields": [{ "rest": true }]
+    },
+    "detail": {
+      "label": "Postal address",
+      "fields": [{ "rest": true }]
+    },
+    "identity": {
+      "label": "Address",
+      "fields": [{ "rest": true }]
+    },
+    "row": {
+      "label": "Address",
+      "fields": [{ "rest": true }]
+    },
+    "card": {
+      "label": "Postal address",
+      "fields": [{ "rest": true }]
+    }
+  }
+}

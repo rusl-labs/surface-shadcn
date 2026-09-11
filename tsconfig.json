@@ -16,5 +16,12 @@
       "@/*": ["./example/src/*"]
     }
   },
-  "include": ["src", "registry", "example/src", "example/vite.config.ts"]
+  "include": [
+    "src",
+    "registry",
+    "example/src",
+    "example/vite.config.ts",
+    "scripts/test-next.ts",
+    "scripts/assert-surface-runtime.ts"
+  ]
 }

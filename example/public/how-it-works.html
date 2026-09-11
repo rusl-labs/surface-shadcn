@@ -1,0 +1,2431 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Surface / How it fits together</title>
+    <style>
+      /* Design canon: 8px spacing module; 2:1 diagram/inspector ratio;
+       type scale 16 → 24 → 36 → 54 (perfect fifth).
+       Generating figure: nested rectangles express ownership and recursion. */
+      :root {
+        --u: 8px;
+        --paper: #f7f7f1;
+        --panel: #fff;
+        --ink: #22382d;
+        --muted: #67736b;
+        --line: #dce3da;
+        --green: #22573e;
+        --green-soft: #e9f2e9;
+        --gold: #856121;
+        --gold-soft: #faf1dd;
+        --code: #162b20;
+        --radius: 12px;
+        --shadow: 0 8px 32px #1b352a06;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+      }
+      button,
+      select {
+        cursor: pointer;
+      }
+      button {
+        color: inherit;
+      }
+      a {
+        color: var(--green);
+        text-underline-offset: 4px;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      a:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid var(--green);
+        outline-offset: 4px;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .shell {
+        width: min(1280px, calc(100% - 64px));
+        margin: auto;
+      }
+      header {
+        border-bottom: 1px solid var(--line);
+      }
+      .masthead {
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: var(--ink);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .brand svg {
+        width: 32px;
+        height: 32px;
+      }
+      .brand span {
+        font-weight: 400;
+        color: var(--muted);
+      }
+      .small-link {
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .hero {
+        padding: 56px 0 32px;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 48px;
+        align-items: end;
+      }
+      .eyebrow {
+        margin: 0 0 16px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(36px, 4vw, 54px);
+        line-height: 1.12;
+        font-weight: 600;
+        letter-spacing: -0.045em;
+      }
+      h1 span {
+        color: var(--green);
+      }
+      .hero-note {
+        margin: 0;
+        max-width: 36ch;
+        color: var(--muted);
+      }
+      .legend {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        padding: 24px 0 32px;
+        font-size: 12px;
+      }
+      .legend span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        background: var(--green);
+      }
+      .dot.kit {
+        background: var(--gold);
+      }
+      .dot.host {
+        background: var(--muted);
+      }
+      .tabs {
+        display: flex;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #eef1e9;
+        gap: 4px;
+      }
+      .tab {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        padding: 16px;
+        border-radius: 8px;
+        text-align: left;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .tab span {
+        color: var(--muted);
+        margin-right: 12px;
+        font-size: 12px;
+        font-family: monospace;
+      }
+      .tab[aria-selected="true"] {
+        background: var(--panel);
+        box-shadow: 0 2px 8px #1836270a;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(288px, 1fr);
+        gap: 24px;
+        align-items: start;
+        margin: 24px 0 32px;
+      }
+      .stage,
+      .inspector {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        min-width: 0;
+      }
+      .stage-head {
+        padding: 24px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: start;
+      }
+      h2 {
+        font-size: 24px;
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+        font-weight: 600;
+        margin: 0 0 8px;
+      }
+      .sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        max-width: 64ch;
+      }
+      .stamp {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .canvas {
+        padding: 24px;
+        background-image: radial-gradient(
+          var(--line) 0.75px,
+          transparent 0.75px
+        );
+        background-size: 16px 16px;
+      }
+      .section-label {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+      .owner {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: var(--green-soft);
+        color: var(--green);
+        font-weight: 700;
+      }
+      .owner.kit {
+        color: var(--gold);
+        background: var(--gold-soft);
+      }
+      .owner.host {
+        color: #4e5f54;
+        background: #edf0eb;
+      }
+      .node {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        text-align: left;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      .node:hover {
+        border-color: #7d9a83;
+      }
+      .node[aria-pressed="true"] {
+        border-color: var(--green);
+        box-shadow: inset 3px 0 var(--green);
+        background: #fbfdf9;
+      }
+      .node strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.3;
+        margin: 8px 0 4px;
+        overflow-wrap: anywhere;
+      }
+      .node small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+      .node code,
+      .path,
+      .mono {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+      }
+      .install-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .boundary {
+        padding: 16px;
+        border: 1px dashed #bdcbbb;
+        border-radius: 8px;
+        background: #f8faf6;
+        min-width: 0;
+      }
+      .boundary-title {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 8px;
+      }
+      .bridge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0;
+        color: var(--green);
+        font-size: 12px;
+      }
+      .bridge::before,
+      .bridge::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      .bridge b {
+        font-weight: 500;
+      }
+      .arrow {
+        color: var(--green);
+        font-size: 24px;
+        line-height: 1;
+        text-align: center;
+        margin: 12px 0;
+      }
+      .boot {
+        border: 1px solid var(--green);
+        background: var(--green-soft);
+      }
+      .callout {
+        padding: 16px 24px;
+        background: #f8faf5;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .callout strong {
+        color: var(--ink);
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 24px;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--line);
+        align-items: end;
+      }
+      .control {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+      }
+      .control > label,
+      .control > span {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      select {
+        background: var(--panel);
+        border: 1px solid #b9c7b9;
+        border-radius: 6px;
+        padding: 8px 32px 8px 12px;
+        color: var(--ink);
+        font-size: 12px;
+        max-width: 100%;
+        min-height: 36px;
+      }
+      .segmented {
+        display: flex;
+        border: 1px solid #b9c7b9;
+        padding: 3px;
+        border-radius: 6px;
+        gap: 3px;
+      }
+      .segmented button {
+        background: transparent;
+        border: 0;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 3px;
+      }
+      .segmented button[aria-pressed="true"] {
+        background: var(--green);
+        color: white;
+      }
+      .checks {
+        width: 100%;
+        display: flex;
+        gap: 12px 24px;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+      }
+      .checks label {
+        font-size: 12px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      input[type="checkbox"] {
+        accent-color: var(--green);
+        width: 16px;
+        height: 16px;
+        margin: 0;
+      }
+      .trees {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 24px;
+      }
+      .tree {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+      .tree .tree {
+        margin-left: 16px;
+        padding-left: 16px;
+        border-left: 1px solid #bdcbbb;
+      }
+      .tree li {
+        margin: 8px 0;
+      }
+      .tree-button {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        padding: 10px 12px;
+        background: transparent;
+        text-align: left;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .tree-button span {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .tree-button:hover {
+        background: #eef3e9;
+      }
+      .tree-button[aria-pressed="true"] {
+        background: var(--green);
+        color: white;
+      }
+      .tree-button[aria-pressed="true"] span {
+        color: #dcebdd;
+      }
+      .react-level {
+        padding-left: 16px;
+        margin-top: 12px;
+        border-left: 1px solid #b7c9b6;
+      }
+      .react-level:first-child {
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      .react-surface {
+        font: 12px/1.6 monospace;
+        color: var(--green);
+        overflow-wrap: anywhere;
+      }
+      .renderer-label {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        font-size: 12px;
+      }
+      .renderer-label b {
+        font-weight: 600;
+      }
+      .primitive {
+        margin-top: 16px;
+        padding: 12px;
+        border: 1px solid #b9c7b9;
+        background: white;
+        border-radius: 6px;
+        font: 12px monospace;
+      }
+      .primitive.accent {
+        border-left: 4px solid var(--green);
+      }
+      .resolver-strip {
+        margin-top: 24px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .resolver-top {
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        background: #f8faf5;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .candidates {
+        margin: 0;
+        padding: 8px 16px;
+        list-style: none;
+        font: 12px/1.6 monospace;
+      }
+      .candidates li {
+        padding: 8px 0;
+        color: var(--muted);
+        border-bottom: 1px solid #edf0e9;
+        overflow-wrap: anywhere;
+      }
+      .candidates li:last-child {
+        border: 0;
+      }
+      .candidates li.winner {
+        color: var(--green);
+        font-weight: 700;
+      }
+      .candidates em {
+        font:
+          10px/1.5 "Avenir Next",
+          sans-serif;
+        padding: 2px 6px;
+        margin-left: 8px;
+        border-radius: 3px;
+        background: var(--green-soft);
+        white-space: nowrap;
+      }
+      .match-note {
+        padding: 0 16px 16px;
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding: 20px 24px 0;
+      }
+      .step {
+        border: 1px solid var(--line);
+        background: white;
+        border-radius: 6px;
+        padding: 12px 8px;
+        font-size: 12px;
+        text-align: left;
+      }
+      .step span {
+        display: block;
+        font-family: monospace;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .step[aria-current="step"] {
+        border-color: var(--green);
+        background: var(--green-soft);
+      }
+      .trace-description {
+        min-height: 72px;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 16px 24px 0;
+        margin: 0;
+      }
+      .trace-description strong {
+        color: var(--ink);
+      }
+      .transport {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 24px 24px;
+      }
+      .btn {
+        border: 1px solid #b9c7b9;
+        background: var(--panel);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 12px;
+        min-height: 36px;
+      }
+      .btn.primary {
+        background: var(--green);
+        color: white;
+        border-color: var(--green);
+      }
+      .transport .count {
+        margin-left: auto;
+        color: var(--muted);
+        font: 12px monospace;
+      }
+      .flow {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .flow .node {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+      }
+      .flow .node > span:first-child {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        font: 12px monospace;
+        flex: none;
+      }
+      .flow .node strong {
+        margin: 0;
+      }
+      .flow .node .owner {
+        margin-left: auto;
+        flex: none;
+      }
+      .flow-arrow {
+        height: 16px;
+        margin-left: 31px;
+        width: 1px;
+        background: #abc1ac;
+      }
+      .result {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        margin-top: 24px;
+        overflow: hidden;
+      }
+      .result-head {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .result pre {
+        margin: 0;
+        padding: 16px;
+        background: white;
+        color: var(--ink);
+      }
+      .inspector {
+        position: sticky;
+        top: 24px;
+      }
+      .inspector-top {
+        padding: 24px;
+      }
+      .inspector-top .eyebrow {
+        margin-bottom: 12px;
+      }
+      .inspector h3 {
+        margin: 12px 0 8px;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        overflow-wrap: anywhere;
+      }
+      .inspector p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .path {
+        margin: 20px 0 0;
+        padding: 12px;
+        background: #f2f5ed;
+        border-radius: 6px;
+        overflow-wrap: anywhere;
+      }
+      .responsibilities {
+        list-style: none;
+        margin: 0;
+        padding: 0 24px 24px;
+        font-size: 12px;
+      }
+      .responsibilities li {
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+      }
+      .responsibilities span {
+        font-weight: 600;
+        color: var(--green);
+        margin-right: 8px;
+      }
+      .code-head {
+        background: var(--code);
+        color: #b0c7b2;
+        padding: 16px 20px 0;
+        font: 10px monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      pre {
+        overflow: auto;
+        white-space: pre;
+        margin: 0;
+        padding: 16px 20px 24px;
+        background: var(--code);
+        color: #e9f2df;
+        font:
+          12px/1.7 "SFMono-Regular",
+          Consolas,
+          monospace;
+        tab-size: 2;
+      }
+      .principle {
+        border-top: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 48px;
+        padding: 32px 0;
+      }
+      .principle h2 {
+        font-size: 24px;
+      }
+      .principle p {
+        margin: 0;
+        max-width: 66ch;
+        color: var(--muted);
+      }
+      .principle code {
+        color: var(--ink);
+        font-size: 12px;
+        background: #eaf0e5;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 24px 0 48px;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      footer a {
+        color: inherit;
+      }
+      .release-note {
+        color: var(--gold);
+        background: var(--gold-soft);
+        border-radius: 4px;
+        font-size: 10px;
+        padding: 4px 8px;
+        white-space: nowrap;
+      }
+      @media (max-width: 1000px) {
+        .workspace {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .inspector {
+          position: static;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .inspector-top {
+          grid-column: 1;
+        }
+        .responsibilities {
+          grid-column: 1;
+        }
+        .code-wrap {
+          grid-column: 2;
+          grid-row: 1 / 3;
+          min-width: 0;
+          background: var(--code);
+        }
+        .hero {
+          gap: 24px;
+        }
+      }
+      @media (max-width: 640px) {
+        .shell {
+          width: calc(100% - 32px);
+        }
+        .masthead {
+          min-height: 64px;
+          gap: 16px;
+        }
+        .brand span {
+          display: none;
+        }
+        .hero {
+          display: block;
+          padding: 32px 0 16px;
+        }
+        .hero-note {
+          margin-top: 24px;
+          max-width: 48ch;
+        }
+        .legend {
+          gap: 16px;
+          padding: 16px 0 24px;
+        }
+        .tab {
+          padding: 12px 8px;
+          font-size: 12px;
+        }
+        .tab span {
+          display: block;
+          margin: 0 0 4px;
+        }
+        .stage-head {
+          padding: 20px;
+        }
+        .canvas,
+        .controls {
+          padding: 20px;
+        }
+        .install-grid,
+        .trees {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        .inspector {
+          display: block;
+        }
+        .steps {
+          padding: 16px 16px 0;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .step {
+          min-height: 56px;
+        }
+        .checks {
+          display: grid;
+          gap: 12px;
+        }
+        .principle {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        footer {
+          flex-direction: column;
+          gap: 12px;
+        }
+        .flow .node {
+          gap: 12px;
+          padding: 12px;
+        }
+        .flow .node .owner {
+          display: none;
+        }
+        .stage-head .stamp {
+          display: none;
+        }
+        .tree .tree {
+          margin-left: 8px;
+          padding-left: 12px;
+        }
+        .transport {
+          flex-wrap: wrap;
+        }
+      }
+      /* Getting-started: the existing 8px module and 2:1 page split,
+         with three sequential sections rather than another dashboard. */
+      .target-note {
+        margin: 0;
+        border-radius: 0;
+      }
+      .onboarding {
+        padding: 32px 24px;
+      }
+      .start-step + .start-step {
+        margin-top: 40px;
+        padding-top: 32px;
+        border-top: 1px solid var(--line);
+      }
+      .start-step > p:not(.section-label) {
+        max-width: 66ch;
+      }
+      .start-step p {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .start-code {
+        margin: 24px 0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--code);
+      }
+      .start-code pre {
+        margin: 0;
+        padding: 16px;
+        overflow: auto;
+      }
+      .install-deliverables {
+        display: grid;
+        gap: 8px;
+      }
+      .install-deliverables .node {
+        text-align: left;
+        width: 100%;
+      }
+      .start-step .start-caption {
+        font-size: 12px;
+        line-height: 1.7;
+      }
+      .start-promises {
+        padding-left: 20px;
+        font-size: 14px;
+      }
+      .start-promises li + li {
+        margin-top: 12px;
+      }
+      .start-details {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+      }
+      .start-details summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      @media (max-width: 640px) {
+        .onboarding {
+          padding: 24px 20px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="shell masthead">
+        <a class="brand" href="#" aria-label="Surface architecture guide">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect
+              x="2"
+              y="2"
+              width="20"
+              height="20"
+              rx="3"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <rect
+              x="10"
+              y="10"
+              width="20"
+              height="20"
+              rx="3"
+              fill="#e9f2e9"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+          surface <span>/ field guide</span>
+        </a>
+        <a class="small-link playground-link" href="http://127.0.0.1:5173"
+          >Open the real playground ↗</a
+        >
+      </div>
+    </header>
+    <main class="shell">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">The getting-started contract</p>
+          <h1>Add Surface.<br /><span>Use your schema.</span></h1>
+        </div>
+        <p class="hero-note">
+          One install. A ready-to-use Surface.<br />Your components, your
+          theme.<br />
+          The wiring comes with it.
+        </p>
+      </div>
+      <div class="legend" aria-label="Ownership legend">
+        <span><i class="dot" aria-hidden="true"></i> Surface core</span>
+        <span
+          ><i class="dot kit" aria-hidden="true"></i> Kit adapters &amp;
+          behavior</span
+        >
+        <span
+          ><i class="dot host" aria-hidden="true"></i> Your application</span
+        >
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Surface guide chapters">
+        <button
+          class="tab"
+          id="tab-setup"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-setup"
+          data-tab="setup"
+        >
+          <span>01</span> Getting started
+        </button>
+        <button
+          class="tab"
+          id="tab-render"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-render"
+          tabindex="-1"
+          data-tab="render"
+        >
+          <span>02</span> Follow a node
+        </button>
+        <button
+          class="tab"
+          id="tab-data"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-data"
+          tabindex="-1"
+          data-tab="data"
+        >
+          <span>03</span> Follow the data
+        </button>
+      </nav>
+      <div class="workspace">
+        <div>
+          <section
+            class="stage"
+            id="panel-setup"
+            role="tabpanel"
+            aria-labelledby="tab-setup"
+          >
+            <div class="stage-head">
+              <div>
+                <h2>From install to first form.</h2>
+                <p class="sub">
+                  For an existing React app with shadcn initialized. No manual
+                  kit assembly. No resolver tutorial before your first field.
+                </p>
+              </div>
+              <span class="stamp">TARGET EXPERIENCE</span>
+            </div>
+            <div class="callout target-note">
+              <strong>README-driven development.</strong> The public registry
+              address below is still proposed and unpublished. The generated
+              entry point and resolvers now ship in the local block. Try the
+              complete installation in a disposable Next app with the commands
+              below.
+            </div>
+            <div class="controls">
+              <div class="control">
+                <label for="package-runner">Package runner</label>
+                <select id="package-runner">
+                  <option value="bun">Bun</option>
+                  <option value="npm">npm</option>
+                  <option value="pnpm">pnpm</option>
+                </select>
+              </div>
+              <div class="control">
+                <label for="aliases">Your app's paths</label>
+                <select id="aliases">
+                  <option value="standard">Typical @/ aliases</option>
+                  <option value="custom">Custom ~/ aliases</option>
+                </select>
+              </div>
+            </div>
+            <div class="onboarding">
+              <section class="start-step">
+                <p class="section-label">01 / Install</p>
+                <h2>One block. Everything connected.</h2>
+                <p>
+                  Run this in your app. The standard shadcn CLI installs
+                  dependencies and writes the complete integration into your
+                  project.
+                </p>
+                <div class="start-code">
+                  <div class="code-head">
+                    Proposed public command · not live
+                  </div>
+                  <pre><code id="install-command"></code></pre>
+                </div>
+                <details class="start-details">
+                  <summary>Try the real installation locally</summary>
+                  <p>From the Surface shadcn checkout:</p>
+                  <div class="start-code">
+                    <div class="code-head">One managed Next.js sandbox</div>
+                    <pre><code>bun run test:next
+
+# Stop the test app's dev server, then:
+bun run test:next:clean</code></pre>
+                  </div>
+                  <p class="start-caption">
+                    Setup builds and packs the kit, creates a fresh Next.js +
+                    Base UI/Nova app, installs through shadcn, and runs next
+                    build. It prints the command to start the app. One fixed
+                    cache directory per checkout; no growing collection of test
+                    apps. Clean removes only the owned sandbox, including its
+                    tarball and registry copy.
+                  </p>
+                </details>
+                <div
+                  class="install-deliverables"
+                  aria-label="What the block installs"
+                >
+                  <button
+                    class="node"
+                    data-inspect="installPrimitives"
+                    aria-pressed="false"
+                  >
+                    <span class="owner host">1 / Underlying components</span
+                    ><strong>Your shadcn primitives</strong
+                    ><small
+                      >Field, Input, Button, and the other required controls.
+                      Reuse existing files; never silently overwrite your
+                      customizations.</small
+                    >
+                  </button>
+                  <button
+                    class="node"
+                    data-inspect="installKit"
+                    aria-pressed="false"
+                  >
+                    <span class="owner kit">2 / Our kit components</span
+                    ><strong>Local Surface renderers</strong
+                    ><small
+                      >Object, array, composition, inputs, displays, and the
+                      form shell. All importing your local controls.</small
+                    >
+                  </button>
+                  <button
+                    class="node"
+                    data-inspect="installResolvers"
+                    aria-pressed="false"
+                  >
+                    <span class="owner kit">3 / Resolvers</span
+                    ><strong>Schema + annotation resolution</strong
+                    ><small
+                      >Ready defaults, AJV connected, and an editable place to
+                      register your own documents.</small
+                    >
+                  </button>
+                  <button
+                    class="node"
+                    data-inspect="installMapping"
+                    aria-pressed="false"
+                  >
+                    <span class="owner kit">4 / Mapping + entry point</span
+                    ><strong>A Surface you can import</strong
+                    ><small
+                      >Renderer registrations and aliases, already wired to the
+                      services. You do not write createSurfaceUi
+                      yourself.</small
+                    >
+                  </button>
+                </div>
+                <p class="start-caption">
+                  Click any installed part to inspect the target files. This is
+                  an install manifest preview—not a terminal simulation.
+                </p>
+              </section>
+              <section class="start-step">
+                <p class="section-label">02 / Render</p>
+                <h2>Import it. Give it a schema.</h2>
+                <p>
+                  This first example uses the existing Contact card schema URL.
+                  The generated resolver loads it and its references; the
+                  generated kit renders the form.
+                </p>
+                <div class="start-code">
+                  <div class="code-head">Your component · target usage</div>
+                  <pre><code id="getting-started-code"></code></pre>
+                </div>
+                <p class="start-caption">
+                  You get editable fields, nested objects, validation feedback,
+                  and Save/Reset. Save calls your handler only with valid data.
+                  This example logs the payload; connect your API when you want
+                  to persist it.
+                </p>
+                <div class="callout">
+                  <strong>No annotation required to start.</strong> Default
+                  input and display work from the schema. Add annotations when
+                  you want labels, grouping, widgets, or named views.
+                </div>
+              </section>
+              <section class="start-step">
+                <p class="section-label">03 / Make it yours</p>
+                <h2>Own the source. Skip the ceremony.</h2>
+                <ul class="start-promises">
+                  <li>
+                    <strong>Change a control:</strong> edit your local Input.
+                    Surface uses that same Input.
+                  </li>
+                  <li>
+                    <strong>Change presentation:</strong> register your
+                    annotation in the generated resolver file. Let core apply
+                    it.
+                  </li>
+                  <li>
+                    <strong>Change a mapping:</strong> edit the generated kit.
+                    No fork and no second lookup engine.
+                  </li>
+                  <li>
+                    <strong>Use local schemas:</strong> seed the generated
+                    schema resolver. Remote URLs are convenient, not mandatory.
+                  </li>
+                </ul>
+                <button class="btn" data-inspect="ready" aria-pressed="true">
+                  Inspect the generated entry point
+                </button>
+                <details class="start-details">
+                  <summary>What “just works” must include</summary>
+                  <ul class="start-promises">
+                    <li>
+                      Installation honors components.json paths and imports,
+                      installs npm dependencies, and makes no silent changes to
+                      existing primitives.
+                    </li>
+                    <li>
+                      The first import needs no provider or resolver
+                      boilerplate. The generated module creates one configured
+                      Surface family, not a new one on every render.
+                    </li>
+                    <li>
+                      Schema load failures and validation errors are visible.
+                      Failed loads do not become successful-looking empty forms.
+                    </li>
+                    <li>
+                      Remote schemas must be browser-accessible.
+                      Private/authenticated sources need your application’s
+                      fetch policy in the generated resolver; the installer
+                      cannot infer credentials.
+                    </li>
+                    <li>
+                      Annotations are explicitly registered. Loading a schema
+                      does not invent or discover an annotation URL.
+                    </li>
+                    <li>
+                      Your application owns persistence. The kit owns neither
+                      your database nor an implicit save endpoint.
+                    </li>
+                  </ul>
+                </details>
+              </section>
+            </div>
+          </section>
+
+          <section
+            class="stage"
+            id="panel-render"
+            role="tabpanel"
+            aria-labelledby="tab-render"
+            hidden
+          >
+            <div class="stage-head">
+              <div>
+                <h2>Follow one node, not a prebuilt tree.</h2>
+                <p class="sub">
+                  Select a schema node. Change the mode or view. The highlighted
+                  path shows which Surface owns each decision.
+                </p>
+              </div>
+              <span class="stamp">RENDERING</span>
+            </div>
+            <div class="controls">
+              <div class="control">
+                <span id="mode-label">Mode</span>
+                <div
+                  class="segmented"
+                  role="group"
+                  aria-labelledby="mode-label"
+                >
+                  <button data-mode="input" aria-pressed="true">input</button
+                  ><button data-mode="display" aria-pressed="false">
+                    display
+                  </button>
+                </div>
+              </div>
+              <div class="control">
+                <label for="view">Parent view</label
+                ><select id="view">
+                  <option value="default">default</option>
+                  <option value="card">card</option>
+                </select>
+              </div>
+              <div class="control">
+                <label for="host-style">Local Input style</label
+                ><select id="host-style">
+                  <option value="accent">App's accent edge</option>
+                  <option value="plain">Plain local Input</option>
+                </select>
+              </div>
+              <div class="checks">
+                <label
+                  ><input id="annotation-view" type="checkbox" /> Email
+                  annotation chooses view="card"</label
+                ><label
+                  ><input id="custom-renderer" type="checkbox" /> Register an
+                  example EmailCard override</label
+                >
+              </div>
+            </div>
+            <div class="canvas">
+              <div class="trees">
+                <div>
+                  <p class="section-label">JSON Schema · select a node</p>
+                  <ul class="tree">
+                    <li>
+                      <button
+                        class="tree-button"
+                        data-schema-node="contact"
+                        aria-pressed="false"
+                      >
+                        contact <span>object</span>
+                      </button>
+                      <ul class="tree">
+                        <li>
+                          <button
+                            class="tree-button"
+                            data-schema-node="name"
+                            aria-pressed="false"
+                          >
+                            name <span>string</span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            class="tree-button"
+                            data-schema-node="email"
+                            aria-pressed="true"
+                          >
+                            email <span>$ref → $defs/email</span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            class="tree-button"
+                            data-schema-node="location"
+                            aria-pressed="false"
+                          >
+                            location <span>object</span>
+                          </button>
+                          <ul class="tree">
+                            <li>
+                              <button
+                                class="tree-button"
+                                data-schema-node="city"
+                                aria-pressed="false"
+                              >
+                                city <span>string</span>
+                              </button>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          <button
+                            class="tree-button"
+                            data-schema-node="tags"
+                            aria-pressed="false"
+                          >
+                            tags <span>array</span>
+                          </button>
+                          <ul class="tree">
+                            <li>
+                              <button
+                                class="tree-button"
+                                data-schema-node="tag"
+                                aria-pressed="false"
+                              >
+                                items / 0 <span>string</span>
+                              </button>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="section-label">React path · the same structure</p>
+                  <div id="react-tree"></div>
+                </div>
+              </div>
+              <div class="resolver-strip">
+                <div class="resolver-top">
+                  <span id="lookup-heading">Current node lookup</span
+                  ><span class="owner">Core decides</span>
+                </div>
+                <ol class="candidates" id="candidate-list"></ol>
+                <p class="match-note" id="match-note"></p>
+              </div>
+            </div>
+            <div class="steps" aria-label="Rendering trace steps">
+              <button class="step" data-render-step="0" aria-current="step">
+                <span>01</span> Resolve node
+              </button>
+              <button class="step" data-render-step="1">
+                <span>02</span> Apply annotation
+              </button>
+              <button class="step" data-render-step="2">
+                <span>03</span> Pick renderer
+              </button>
+              <button class="step" data-render-step="3">
+                <span>04</span> Render locally
+              </button>
+            </div>
+            <p
+              class="trace-description"
+              id="render-description"
+              aria-live="polite"
+            ></p>
+            <div class="transport">
+              <button class="btn" data-restart="render">Restart</button
+              ><button class="btn primary" data-next="render">
+                Next step →</button
+              ><span class="count" id="render-count">1 / 4</span>
+            </div>
+            <div class="callout">
+              <strong>Interactive illustration, not a second renderer.</strong>
+              This guide visualizes a reduced contact example. The linked
+              playground runs the actual Surface and shadcn components.
+              EmailCard is an example host override, not a built-in widget.
+            </div>
+          </section>
+
+          <section
+            class="stage"
+            id="panel-data"
+            role="tabpanel"
+            aria-labelledby="tab-data"
+            hidden
+          >
+            <div class="stage-head">
+              <div>
+                <h2>Edits go up. Views update down.</h2>
+                <p class="sub">
+                  There is one data channel. A field does not maintain a
+                  parallel form model.
+                </p>
+              </div>
+              <span class="stamp">DATA &amp; VALIDATION</span>
+            </div>
+            <div class="controls">
+              <div class="control">
+                <span id="journey-label">Trace</span>
+                <div
+                  class="segmented"
+                  role="group"
+                  aria-labelledby="journey-label"
+                >
+                  <button data-journey="edit" aria-pressed="true">
+                    Edit a field</button
+                  ><button data-journey="save" aria-pressed="false">
+                    Save the record
+                  </button>
+                </div>
+              </div>
+              <div class="control">
+                <label for="validation-case">Illustrated save outcome</label
+                ><select id="validation-case">
+                  <option value="valid">Valid email</option>
+                  <option value="invalid">Invalid email</option>
+                </select>
+              </div>
+            </div>
+            <div class="canvas">
+              <div class="flow" id="data-flow"></div>
+              <div class="result">
+                <div class="result-head">
+                  <strong id="result-title">Controlled draft</strong
+                  ><span id="result-status">Illustration</span>
+                </div>
+                <pre><code id="data-result"></code></pre>
+              </div>
+            </div>
+            <p
+              class="trace-description"
+              id="data-description"
+              aria-live="polite"
+            ></p>
+            <div class="transport">
+              <button class="btn" data-restart="data">Restart</button
+              ><button class="btn primary" data-next="data">Next step →</button
+              ><span class="count" id="data-count">1 / 4</span>
+            </div>
+            <div class="callout">
+              <strong>Validation has an owner.</strong> The app supplies the
+              validator; the kit's form actions invoke it. The chosen outcome
+              here is illustrative—this page does not implement AJV or submit
+              any data.
+            </div>
+          </section>
+        </div>
+
+        <aside class="inspector" aria-label="Selected part details">
+          <div class="inspector-top">
+            <p class="eyebrow">Inside this part</p>
+            <span class="owner" id="detail-owner">Core</span>
+            <h3 id="detail-title"></h3>
+            <p id="detail-description"></p>
+            <div class="path" id="detail-path"></div>
+          </div>
+          <ul class="responsibilities" id="detail-rules"></ul>
+          <div class="code-wrap">
+            <div class="code-head" id="detail-code-label">Code shape</div>
+            <pre><code id="detail-code"></code></pre>
+          </div>
+        </aside>
+      </div>
+      <section class="principle">
+        <h2>The boundary<br />to keep intact.</h2>
+        <p>
+          A parent hands a child node to <code>Surface</code>. It does not fetch
+          the child's schema to plan its UI. Object, array, and composition
+          renderers manage their own immediate structure; core resolves the next
+          node and selects its component. A referenced variant's title can be
+          read through the resolver for its option label—that does not make the
+          kit a schema planner.
+        </p>
+      </section>
+      <footer>
+        <span
+          >Read the map here. Exercise the real behavior in the
+          <a class="playground-link" href="http://127.0.0.1:5173">playground</a
+          >.</span
+        ><span
+          >Grounded in
+          <a
+            href="https://github.com/rusl-labs/surface/tree/master/packages/core"
+            target="_blank"
+            rel="noreferrer"
+            >Surface core</a
+          >
+          and this project's kit. No external scripts or services.</span
+        >
+      </footer>
+    </main>
+    <script>
+      // Fixed explanatory scenes, not a replacement for Surface's resolver or validator.
+      const state = {
+        tab: "setup",
+        runner: "bun",
+        alias: "standard",
+        node: "email",
+        mode: "input",
+        view: "default",
+        annotation: false,
+        custom: false,
+        style: "accent",
+        renderStep: 0,
+        journey: "edit",
+        dataStep: 0,
+        valid: true,
+        inspector: "ready",
+      };
+      const paths = () =>
+        state.alias === "custom"
+          ? {
+              kit: "~/features/surface/kit",
+              email: "~/features/surface/email",
+              input: "~/design-system/input",
+            }
+          : {
+              kit: "@/components/surface/kit",
+              email: "@/components/surface/email",
+              input: "@/components/ui/input",
+            };
+      const parts = {
+        ready: {
+          owner: "kit",
+          title: "Generated, not homework.",
+          description:
+            "The block installs this entry point along with the components, resolvers, validator setup, and mapping. Your app imports Surface. You only open the wiring when you want to customize it.",
+          path: () =>
+            paths().kit.replace(/kit$/, "index.tsx") +
+            "\ninstalled by the Surface block",
+          rules: [
+            "Creates and exports one configured Surface family using the installed services and local kit.",
+            "Uses Surface core as-is. No new schema walker, provider requirement, or form-state engine.",
+            "Optional SurfaceProvider sets locale, defaultCountry and defaultCurrency. Explicit data and field settings win; it never infers currency from browser locale.",
+          ],
+          code: () =>
+            `// Generated by the block — not a setup step.\n"use client";\n\nimport { createSurfaceUi }\n  from "@rusl-labs/surface";\nimport { createAjvValidator }\n  from "@rusl-labs/surface-ajv";\nimport { createShadcnKit } from "./kit";\nimport {\n  schemaResolver,\n  annotationResolver,\n} from "./resolvers";\nexport { SurfaceProvider }\n  from "@rusl-labs/surface-shadcn";\n\nexport const { Surface } = createSurfaceUi({\n  schemaResolver,\n  annotationResolver,\n  validator: createAjvValidator(),\n  kit: createShadcnKit(),\n});`,
+        },
+        installPrimitives: {
+          owner: "host",
+          title: "Your existing design system.",
+          description:
+            "The block declares its shadcn dependencies. Missing primitives are installed as local source; existing customizations remain yours.",
+          path: () => paths().input + ".tsx\nand the other required primitives",
+          rules: [
+            "Uses the app’s configured shadcn directories and compatible component base.",
+            "Never bundles a private UI copy or silently overwrites a customized control.",
+            "Country/currency pickers use the host’s standard searchable Combobox. Enum, variant, and playground choices use its styled Select.",
+          ],
+          code: () =>
+            `// The generated renderer imports your file:\nimport { Input } from "${paths().input}";\n\n// Registry dependencies include:\n// field, input, input-group, textarea,\n// checkbox, select, combobox, button, alert\n\n// An npm upgrade cannot replace\n// your app-local Input, Select, or Combobox.`,
+        },
+        installKit: {
+          owner: "kit",
+          title: "Our components. Your files.",
+          description:
+            "Object and array renderers belong in the same local source installation as the leaf controls they compose. Nonvisual helpers and Surface core remain npm dependencies.",
+          path: () =>
+            paths().kit.replace(/kit$/, "") +
+            "\nproposed installation directory",
+          rules: [
+            "Installs the kit renderers and their local imports together.",
+            "Each renderer handles its current node and mounts child Surfaces. No lookahead.",
+            "Phone normalizes to E.164; money converts major-unit input to exact integer minor units. Local parse issues block Save without duplicating Surface’s data.",
+          ],
+          code: () =>
+            `components/surface/\n  index.tsx\n  resolvers.ts\n  kit.tsx\n  object.tsx\n  array.tsx\n  composition.tsx\n  string.tsx\n  email.tsx\n  phone.tsx\n  money.tsx\n  textarea.tsx\n  number.tsx\n  boolean.tsx\n  enum.tsx\n  const.tsx\n  chrome.tsx\n  root.tsx\n  fallback.tsx\n\n// Paths follow your components.json.\n// These are editable app source.`,
+        },
+        installResolvers: {
+          owner: "kit",
+          title: "Ready defaults. One edit point.",
+          description:
+            "The generated resolver seeds canonical contact scalars, money, and currency codes locally, while retaining URL fetches for other schemas. Annotations remain explicit and optional.",
+          path: () =>
+            paths().kit.replace(/kit$/, "resolvers.ts") +
+            "\ninstalled by the Surface block",
+          rules: [
+            "Connects existing Surface resolvers; accepts local schema and annotation registrations when needed.",
+            "Does not invent remote annotation discovery or an authentication policy.",
+          ],
+          code: () =>
+            `// Generated by the block.\nimport {\n  InMemorySchemaFetchResolver,\n  InMemoryAnnotationResolver,\n} from "@rusl-labs/surface";\nimport { shadcnSchemas }\n  from "@rusl-labs/surface-shadcn";\n\nexport const schemaResolver =\n  new InMemorySchemaFetchResolver(shadcnSchemas);\n\nexport const annotationResolver =\n  new InMemoryAnnotationResolver({});\n\n// Add your documents alongside shadcnSchemas.\n// Supported canonical refs work offline.\n// Other public schema URLs can still load.\n// AJV is connected in the entry point.`,
+        },
+        installMapping: {
+          owner: "kit",
+          title: "The mapping comes with it.",
+          description:
+            "The block installs the full renderer registrations, aliases, and root form shell. Its generated entry point imports this kit automatically.",
+          path: () => paths().kit + ".tsx\ninstalled by the same command",
+          rules: [
+            "Maps schema keys, modes, and views to installed components. Ready without manual registrations.",
+            "Matching and precedence still belong to Surface core, not generated lookup logic.",
+            "Canonical money aliases to one money key. Its display registration omits view, sharing Identity/Row/Card. Host aliases and registrations can add or replace mappings.",
+          ],
+          code: () =>
+            `// Generated entry point:\nimport { createShadcnKit } from "./kit";\n\n// Generated kit imports local renderers:\nimport { ObjectInput, ObjectDisplay }\n  from "./object";\nimport { StringInput, StringDisplay }\n  from "./string";\n\n// The complete mapping is delivered,\n// including aliases and all renderers.\n// Edit kit.tsx only to customize it.`,
+        },
+        core: {
+          owner: "core",
+          title: "Surface core",
+          description:
+            "Resolves the current schema or definition, applies its annotation context, then asks the kit for a renderer. Nested Surfaces belong to the same configured family.",
+          path: "@rusl-labs/surface\npackages/core/src/surface.tsx",
+          rules: [
+            "Owns schema/ref resolution, renderer dispatch, data paths and validity projection.",
+            "Does not import your Input, Card, or other design-system components.",
+          ],
+          code: () =>
+            `const { Surface } = createSurfaceUi({\n  schemaResolver,\n  annotationResolver,\n  validator,\n  kit: createShadcnKit(),\n});\n\n<Surface\n  id={CONTACT_ID}\n  data={contact}\n  mode="input"\n  view="default"\n/>`,
+        },
+        behavior: {
+          owner: "kit",
+          title: "Shared kit behavior",
+          description:
+            "The npm package contains nonvisual support for the local adapters. It is not a packaged copy of the shadcn UI.",
+          path: "@rusl-labs/surface-shadcn\nsrc/",
+          rules: [
+            "Owns field state, accessibility IDs, node-local const/default initialization and form actions.",
+            "Does not decide what every descendant should render.",
+          ],
+          code: () =>
+            `import {\n  FieldScope,\n  useFieldState,\n  useFormActions,\n} from "@rusl-labs/surface-shadcn";\n\n// Local adapter reads the current node.\nconst field = useFieldState();\nconst { dataApi } = useSurface();`,
+        },
+        validator: {
+          owner: "host",
+          title: "The chosen validator",
+          description:
+            "The app provides a SurfaceValidator. The example uses the AJV adapter and the same schema resolver that serves the UI.",
+          path: "@rusl-labs/surface-ajv\nconfigured by your app",
+          rules: [
+            "Owns validation against the schema.",
+            "Returns issues with data paths; the kit paints them.",
+          ],
+          code: () =>
+            `const validator = createAjvValidator();\n\nconst result = await validator.validate({\n  id,\n  schema,\n  data,\n  schemaResolver,\n});\n\n// { valid, issues: [{ path, message }] }`,
+        },
+        kit: {
+          owner: "kit",
+          title: "The local mapping",
+          description:
+            "Maps schema keys, modes, and views to components. Aliases share a mapping; the actual lookup and precedence stay in Surface core.",
+          path: () =>
+            paths().kit + ".tsx\nauthored in registry/surface/kit.tsx",
+          rules: [
+            "Owns registrations, aliases, and the root form shell.",
+            "Does not implement another resolver or anticipate child layouts.",
+          ],
+          code: () =>
+            `createRegistryKit({\n  fallback: Fallback,\n  Root: ShadcnRoot,\n  aliases: {\n    input: "string",\n    integer: "number",\n    anyOf: "oneOf",\n  },\n  resolvers: [\n    { key: "string", mode: "input",\n      component: StringInput },\n    { key: "email", mode: "display",\n      component: EmailDisplay },\n    // …other registrations\n  ],\n});`,
+        },
+        adapter: {
+          owner: "kit",
+          title: "A thin local adapter",
+          description:
+            "Reads the current resolved node and connects its data to an app-local control. Email is specialized because input and read-only link behavior differ.",
+          path: () =>
+            paths().email + ".tsx\nauthored in registry/surface/email.tsx",
+          rules: [
+            "Owns control props, field chrome, and dataApi.setData for this node.",
+            "Leaves child resolution and view dispatch to Surface.",
+          ],
+          code: () =>
+            `import { Input } from "${paths().input}";\n\n// Inside EmailInput:\nconst field = useFieldState();\nconst { dataApi } = useSurface();\n\n<Input\n  type="email"\n  id={field.controlId}\n  value={data ?? ""}\n  onChange={event =>\n    dataApi?.setData(event.target.value)\n  }\n/>\n\n// EmailDisplay uses a mailto: link.`,
+        },
+        primitive: {
+          owner: "host",
+          title: "Your local primitive",
+          description:
+            "The adapter imports the Input that is installed in your app. A local change to that primitive is reflected wherever those adapters use it.",
+          path: () => paths().input + ".tsx\nplus your app’s theme CSS",
+          rules: [
+            "Owns visual styling and the primitive’s control implementation.",
+            "Does not know JSON Schema, annotations, or the Surface registry.",
+          ],
+          code: () =>
+            `// App-local source, not hidden in the kit.\nimport { Input } from "${paths().input}";\n\n// EmailInput uses this Input as-is.\n// Change the primitive here and every\n// adapter that imports it updates.\n\n// No change to Surface core is needed.`,
+        },
+        schema: {
+          owner: "host",
+          title: "Schema resolver",
+          description:
+            "Loads the schema or definition for the current mount. InMemorySchemaFetchResolver can serve seeded documents and fetch missing schema URLs.",
+          path: "App-configured SchemaResolver\nresolved by Surface core",
+          rules: [
+            "A $ref crosses into its target through Surface.",
+            "A parent adapter does not fetch that target to choose its child UI.",
+          ],
+          code: () =>
+            `const schemaResolver =\n  new InMemorySchemaFetchResolver({\n    [contactSchema.$id]: contactSchema,\n  });\n\n// The object helper gives the child props.\n<Surface {...field.surface} />\n\n// That child can resolve:\n// contact.scalars#/$defs/email`,
+        },
+        annotation: {
+          owner: "host",
+          title: "Annotation context",
+          description:
+            "Controls presentation such as labels, grouping, widget choice, and a child’s view. Core helpers apply it before handing child props to the object renderer.",
+          path: "App-configured AnnotationResolver\ncore: helpers-shared.ts / emitField",
+          rules: [
+            "An entry’s view overrides the parent view; otherwise the view is inherited.",
+            "Loading a schema URL does not automatically discover remote annotations.",
+          ],
+          code: () =>
+            `// An annotation entry:\n{\n  "name": "email",\n  "label": "Work email",\n  "view": "card"\n}\n\n// Core prepares the effective child props:\nconst childView = annotationView\n  ?? parentView;\n\n// The object renderer just mounts them:\n<Surface {...field.surface} />`,
+        },
+        dispatch: {
+          owner: "core",
+          title: "Mode + view + key",
+          description:
+            "Core tries the candidate keys in order and uses its registry matching rules. A direct schema/definition registration can override a structural default or alias.",
+          path: "core: lookups.ts / candidateKeys\ncore: kit.ts / createRegistryKit",
+          rules: [
+            "Schema identity precedes widget, format, and type candidates.",
+            "Absent view restrictions match any view; a named view can fall back to default-view entries.",
+          ],
+          code: () =>
+            state.custom
+              ? `// Example host override — not a built-in:\ncreateShadcnKit({ resolvers: [{\n  key: EMAIL_SCHEMA_ID,\n  mode: "display",\n  view: "card",\n  component: EmailCard,\n}] });\n\n// EmailCard is supplied by the host.\n// It wins only for that key/mode/view.\n// Other fields keep their mappings.`
+              : `// Simplified candidate order:\nschema.$id\nsubjectRootCoordinate  // includes $defs\nwidget.$kind\nwidget:name → name\nformat:name → name\nconst → enum → type\noneOf / anyOf / allOf\n\n// The email definition has a kit alias:\nEMAIL_SCHEMA_ID → "email"\n\n// This lookup belongs to core.`,
+        },
+        object: {
+          owner: "kit",
+          title: "Object adapter",
+          description:
+            "Uses the annotation-aware children core has already prepared, then mounts a Surface for each field. Sections add local layout chrome.",
+          path: "registry/surface/object.tsx\ninstalled into your app",
+          rules: [
+            "Owns this object’s immediate layout and field chrome.",
+            "Does not resolve a field’s renderer or build a parallel schema tree.",
+          ],
+          code: () =>
+            `const { helpers, Surface } = useSurface();\n\n// Each field already includes schema, data,\n// annotation coordinate, and effective view.\nfor (const child of helpers.fields()) {\n  if (child.kind === "field") {\n    <Surface {...child.surface} />\n  }\n  // Sections get local grouping chrome.\n}`,
+        },
+        array: {
+          owner: "kit",
+          title: "Array adapter",
+          description:
+            "Owns the list and add/remove controls. Each item gets another Surface, including strings and schema references.",
+          path: "registry/surface/array.tsx\ninstalled into your app",
+          rules: [
+            "Owns the current collection’s immediate structure.",
+            "Child values and references render through Surface, not through guessed child components.",
+          ],
+          code: () =>
+            `const { Surface, schema, mode, view }\n  = useSurface();\n\nitems.map((value, index) => (\n  <Surface\n    id={String(index)}\n    schema={schema.items}\n    data={value}\n    mode={mode}\n    view={view}\n  />\n));`,
+        },
+        channel: {
+          owner: "core",
+          title: "The node’s data channel",
+          description:
+            "The email adapter writes only its own value. NestedSurface scopes that write to the email slot and preserves the rest of the contact.",
+          path: "core: surface.tsx / NestedSurface\ncore: data.ts / setChildValue",
+          rules: [
+            "Owns instance paths and immutable child-slot updates.",
+            "allOf/union branches share the current value instead of creating artificial data properties.",
+          ],
+          code: () =>
+            `// In the leaf adapter:\ndataApi.setData("alex@example.com");\n\n// The core-scoped child channel writes:\nparentApi.setChild("email", nextValue);\n\n// At the root, the controlled app receives:\nonChange(nextContact);\n\n// Not: { allOf: { union: { email: … } } }`,
+        },
+        host: {
+          owner: "host",
+          title: "Controlled application state",
+          description:
+            "The playground owns the draft. Its input Surface and display Surface receive the same data, so the read view updates from the same record.",
+          path: "example/src/main.tsx\nSchemaEditor",
+          rules: [
+            "Owns the controlled draft and the saved-record callback result.",
+            "Does not keep a second per-field form model.",
+          ],
+          code: () =>
+            `const [draft, setDraft] = useState(initial);\n\n<Surface id={id}\n  data={draft}\n  onChange={setDraft}\n  mode="input" />\n\n<Surface id={id}\n  data={draft}\n  mode="display" />`,
+        },
+        save: {
+          owner: "kit",
+          title: "The form shell",
+          description:
+            "ShadcnRoot provides Save/Reset buttons. useFormActions reads the current root data, prepares const/default values, and invokes the app’s validator.",
+          path: "registry/surface/root.tsx\nsrc/use-form-actions.ts",
+          rules: [
+            "Owns the Save UI and validation/submit sequence.",
+            "Does not use native form navigation as its submission mechanism.",
+          ],
+          code: () =>
+            `const { save, reset, pending }\n  = useFormActions();\n\n<Button type="button"\n  disabled={pending}\n  onClick={() => void save()}>\n  Save\n</Button>\n\n// Save: current data → prepare\n//       → validate → report → submit`,
+        },
+        submit: {
+          owner: "host",
+          title: "A valid submission",
+          description:
+            "After a successful validation, the optional onSubmit callback receives the valid prepared payload. Persistence is the application’s responsibility.",
+          path: "App: onSubmit({ data })",
+          rules: [
+            "Owns persistence, API calls, or application-specific side effects.",
+            "Does not receive invalid data from the kit’s Save path.",
+          ],
+          code: () =>
+            `<Surface\n  id={id}\n  data={draft}\n  onChange={setDraft}\n  onSubmit={({ data }) => {\n    setSaved(data);\n    // Your persistence operation belongs here.\n  }}\n/>`,
+        },
+        issues: {
+          owner: "kit",
+          title: "Errors return to the fields",
+          description:
+            "A failed validation reports issues to the core channel. Core projects paths to child nodes; local FieldError components display the messages.",
+          path: "core validity channel\nlocal FieldError + root Alert",
+          rules: [
+            "Keeps onSubmit out of the invalid path.",
+            "A child reads issues relative to its own data path.",
+          ],
+          code: () =>
+            `// Validator result (illustrative):\n{ valid: false, issues: [{\n  path: ["email"],\n  message: "must match format email"\n}] }\n\ndataApi.reportValidation(result);\n\n// At the email node, the path is local: []\n// Its adapter paints FieldError.\n// onSubmit is not called.`,
+        },
+      };
+      const nodes = {
+        contact: {
+          type: "object",
+          label: "Contact",
+          id: "CONTACT_ID",
+          path: [],
+          chain: ["contact"],
+        },
+        name: {
+          type: "string",
+          label: "name",
+          id: "name",
+          path: ["name"],
+          chain: ["contact", "name"],
+        },
+        email: {
+          type: "email",
+          label: "email",
+          id: "email",
+          path: ["email"],
+          chain: ["contact", "email"],
+        },
+        location: {
+          type: "object",
+          label: "location",
+          id: "location",
+          path: ["location"],
+          chain: ["contact", "location"],
+        },
+        city: {
+          type: "string",
+          label: "city",
+          id: "city",
+          path: ["location", "city"],
+          chain: ["contact", "location", "city"],
+        },
+        tags: {
+          type: "array",
+          label: "tags",
+          id: "tags",
+          path: ["tags"],
+          chain: ["contact", "tags"],
+        },
+        tag: {
+          type: "string",
+          label: "item 0",
+          id: "0",
+          path: ["tags", 0],
+          chain: ["contact", "tags", "tag"],
+        },
+      };
+      const $ = (id) => document.getElementById(id);
+      const ownerNames = {
+        core: "Surface core",
+        kit: "Kit / local adapter",
+        host: "Your application",
+      };
+      function inspect(id) {
+        state.inspector = id;
+        const item = parts[id];
+        $("detail-owner").className =
+          "owner " + (item.owner === "core" ? "" : item.owner);
+        $("detail-owner").textContent = ownerNames[item.owner];
+        $("detail-title").textContent = item.title;
+        $("detail-description").textContent = item.description;
+        $("detail-path").textContent =
+          typeof item.path === "function" ? item.path() : item.path;
+        $("detail-rules").replaceChildren(
+          ...item.rules.map((rule, index) => {
+            const li = document.createElement("li");
+            const prefix = document.createElement("span");
+            prefix.textContent = index === 0 ? "Owns" : "Boundary";
+            li.append(prefix, document.createTextNode(rule));
+            return li;
+          }),
+        );
+        $("detail-code").textContent = item.code();
+        document
+          .querySelectorAll("[data-inspect]")
+          .forEach((el) =>
+            el.setAttribute("aria-pressed", String(el.dataset.inspect === id)),
+          );
+      }
+      function updateGettingStarted() {
+        const runners = { bun: "bunx --bun", npm: "npx", pnpm: "pnpm dlx" };
+        $("install-command").textContent =
+          runners[state.runner] +
+          " shadcn@latest add https://ui.rusl.com/r/surface.json";
+        const entry = paths().kit.replace(/\/kit$/, "");
+        $("getting-started-code").textContent =
+          `"use client";\n\nimport { Surface } from "${entry}";\n\nconst schemaId =\n  "https://resources.rusl.com/resources/pragmatic/schemas/contact.card";\n\nexport default function ContactForm() {\n  return (\n    <Surface\n      id={schemaId}\n      mode="input"\n      onSubmit={({ data }) => console.log(data)}\n    />\n  );\n}`;
+      }
+      function activateTab(name, focus = false) {
+        state.tab = name;
+        document.querySelectorAll("[data-tab]").forEach((el) => {
+          const active = el.dataset.tab === name;
+          el.setAttribute("aria-selected", String(active));
+          el.tabIndex = active ? 0 : -1;
+          if (active && focus) el.focus();
+        });
+        for (const chapter of ["setup", "render", "data"])
+          $("panel-" + chapter).hidden = chapter !== name;
+        if (name === "setup") inspect("ready");
+        if (name === "render") updateRender();
+        if (name === "data") updateData();
+      }
+      function rendererFor(key) {
+        const node = nodes[key];
+        const effectiveView =
+          key === "email" && state.annotation ? "card" : state.view;
+        const custom =
+          key === "email" &&
+          state.custom &&
+          state.mode === "display" &&
+          effectiveView === "card";
+        const base =
+          node.type === "object"
+            ? "Object"
+            : node.type === "array"
+              ? "Array"
+              : node.type === "email"
+                ? "Email"
+                : "String";
+        return {
+          name: custom
+            ? "EmailCard"
+            : base + (state.mode === "input" ? "Input" : "Display"),
+          view: effectiveView,
+          custom,
+        };
+      }
+      function updateRender() {
+        const node = nodes[state.node],
+          result = rendererFor(state.node);
+        document
+          .querySelectorAll("[data-mode]")
+          .forEach((el) =>
+            el.setAttribute(
+              "aria-pressed",
+              String(el.dataset.mode === state.mode),
+            ),
+          );
+        document
+          .querySelectorAll("[data-schema-node]")
+          .forEach((el) =>
+            el.setAttribute(
+              "aria-pressed",
+              String(el.dataset.schemaNode === state.node),
+            ),
+          );
+        const tree = $("react-tree");
+        tree.replaceChildren();
+        let parent = tree;
+        for (const key of node.chain) {
+          const level = document.createElement("div");
+          level.className = "react-level";
+          const mount = document.createElement("div");
+          mount.className = "react-surface";
+          mount.textContent =
+            key === "contact"
+              ? "<Surface id={CONTACT_ID}>"
+              : '<Surface id="' + nodes[key].id + '">';
+          const mapped = rendererFor(key);
+          const label = document.createElement("div");
+          label.className = "renderer-label";
+          const badge = document.createElement("span");
+          badge.className = "owner " + (mapped.custom ? "host" : "kit");
+          badge.textContent = mapped.custom ? "Host override" : "Local adapter";
+          const name = document.createElement("b");
+          name.textContent = mapped.name;
+          label.append(badge, name);
+          level.append(mount, label);
+          parent.append(level);
+          parent = level;
+        }
+        const usesInput =
+          state.mode === "input" &&
+          !result.custom &&
+          (node.type === "email" || node.type === "string");
+        $("host-style").disabled = !usesInput;
+        const primitive = document.createElement("div");
+        primitive.className =
+          "primitive" +
+          (usesInput && state.style === "accent" ? " accent" : "");
+        primitive.textContent = result.custom
+          ? "Host-authored card JSX"
+          : node.type === "object"
+            ? state.mode === "input"
+              ? "<FieldGroup> + child Surfaces"
+              : "<dl> + child Surfaces"
+            : node.type === "array"
+              ? state.mode === "input"
+                ? "<FieldSet> + child Surfaces"
+                : "<ul> + child Surfaces"
+              : state.mode === "display"
+                ? node.type === "email"
+                  ? '<a href="mailto:…">'
+                  : "<span>"
+                : "<Input> from your app";
+        parent.append(primitive);
+        $("lookup-heading").textContent =
+          "mode: " +
+          state.mode +
+          " · view: " +
+          result.view +
+          " · path: " +
+          JSON.stringify(node.path);
+        const candidates =
+          state.node === "email"
+            ? [
+                {
+                  text: "…/contact.scalars#/$defs/email",
+                  winner: true,
+                  note: result.custom
+                    ? "direct host registration"
+                    : "alias → email",
+                },
+                {
+                  text: "format:email → email",
+                  winner: false,
+                  note: "not reached",
+                },
+                { text: "string", winner: false, note: "not reached" },
+              ]
+            : state.node === "contact"
+              ? [
+                  {
+                    text: "urn:surface-shadcn:contact-example",
+                    winner: false,
+                    note: "no registration",
+                  },
+                  { text: "object", winner: true, note: "registered default" },
+                ]
+              : [{ text: node.type, winner: true, note: "registered default" }];
+        $("candidate-list").replaceChildren(
+          ...candidates.map((candidate) => {
+            const li = document.createElement("li");
+            li.className = candidate.winner ? "winner" : "";
+            li.append(document.createTextNode(candidate.text));
+            const note = document.createElement("em");
+            note.textContent = candidate.note;
+            li.append(note);
+            return li;
+          }),
+        );
+        $("match-note").textContent = result.custom
+          ? "EmailCard wins for this definition + display + card. It is an example host-provided component."
+          : state.custom
+            ? "The EmailCard override does not match this node/mode/view. Core keeps the normal mapping."
+            : "No matching host override. Core uses the kit registration; the adapter does not perform this lookup.";
+        const steps = [
+          [
+            "schema",
+            "The selected Surface resolves only its own node. A $ref or $defs boundary is handled here, not by its parent.",
+          ],
+          [
+            "annotation",
+            "Core applies the annotation context. Effective view for this node: " +
+              result.view +
+              ". " +
+              (state.node === "email" && state.annotation
+                ? "The email entry overrides the parent view."
+                : "The node inherits the parent view."),
+          ],
+          [
+            "dispatch",
+            "Core resolves the candidate keys with mode " +
+              state.mode +
+              " and view " +
+              result.view +
+              ". The result is " +
+              result.name +
+              ".",
+          ],
+          [
+            result.custom
+              ? "dispatch"
+              : node.type === "object"
+                ? "object"
+                : node.type === "array"
+                  ? "array"
+                  : "adapter",
+            result.name +
+              (node.type === "object" || node.type === "array"
+                ? " returns local structure and more child Surfaces. The same cycle repeats at each child."
+                : " returns its local presentation. Any shadcn Input comes from your application, not a hidden kit copy."),
+          ],
+        ];
+        document.querySelectorAll("[data-render-step]").forEach((el) => {
+          if (Number(el.dataset.renderStep) === state.renderStep)
+            el.setAttribute("aria-current", "step");
+          else el.removeAttribute("aria-current");
+        });
+        $("render-description").textContent = steps[state.renderStep][1];
+        $("render-count").textContent = state.renderStep + 1 + " / 4";
+        document.querySelector('[data-next="render"]').disabled =
+          state.renderStep === 3;
+        inspect(steps[state.renderStep][0]);
+      }
+      function updateData() {
+        document
+          .querySelectorAll("[data-journey]")
+          .forEach((el) =>
+            el.setAttribute(
+              "aria-pressed",
+              String(el.dataset.journey === state.journey),
+            ),
+          );
+        const email = state.valid ? "alex@example.com" : "not-an-email";
+        const entries =
+          state.journey === "edit"
+            ? [
+                [
+                  "adapter",
+                  "Local Input emits a change",
+                  "EmailInput calls dataApi.setData(next).",
+                ],
+                [
+                  "channel",
+                  "Core updates the email slot",
+                  'The path is ["email"], not a separate form model.',
+                ],
+                [
+                  "host",
+                  "The app receives the draft",
+                  "onChange(nextContact) updates controlled state.",
+                ],
+                [
+                  "core",
+                  "Surfaces receive the new data",
+                  "Input and display render from the same record.",
+                ],
+              ]
+            : [
+                [
+                  "save",
+                  "Read and prepare current data",
+                  "The kit form action applies const/default preparation.",
+                ],
+                [
+                  "validator",
+                  "Validate through the app’s adapter",
+                  "The validator returns a result and data-path issues.",
+                ],
+                [
+                  "channel",
+                  "Report the validation result",
+                  "Core owns validity; the kit reads it at each node.",
+                ],
+                [
+                  state.valid ? "submit" : "issues",
+                  state.valid
+                    ? "Call onSubmit({ data })"
+                    : "Show errors; do not submit",
+                  state.valid
+                    ? "The application decides how to persist the payload."
+                    : "FieldError and the root Alert explain what must change.",
+                ],
+              ];
+        const flow = $("data-flow");
+        flow.replaceChildren();
+        entries.forEach((entry, index) => {
+          if (index) {
+            const arrow = document.createElement("div");
+            arrow.className = "flow-arrow";
+            arrow.setAttribute("aria-hidden", "true");
+            flow.append(arrow);
+          }
+          const button = document.createElement("button");
+          button.className = "node";
+          button.dataset.flowStep = String(index);
+          button.setAttribute("aria-pressed", String(index === state.dataStep));
+          const num = document.createElement("span");
+          num.textContent = String(index + 1).padStart(2, "0");
+          const body = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = entry[1];
+          const detail = document.createElement("small");
+          detail.textContent = entry[2];
+          body.append(title, detail);
+          const owner = document.createElement("span");
+          owner.className =
+            "owner " +
+            (parts[entry[0]].owner === "core" ? "" : parts[entry[0]].owner);
+          owner.textContent = ownerNames[parts[entry[0]].owner];
+          button.append(num, body, owner);
+          button.addEventListener("click", () => {
+            state.dataStep = index;
+            updateData();
+          });
+          flow.append(button);
+        });
+        $("data-description").textContent = entries[state.dataStep][2];
+        $("data-count").textContent = state.dataStep + 1 + " / 4";
+        document.querySelector('[data-next="data"]').disabled =
+          state.dataStep === 3;
+        $("result-title").textContent =
+          state.journey === "edit"
+            ? "Illustrated controlled draft"
+            : state.valid
+              ? "Illustrated valid payload"
+              : "Illustrated validation issue";
+        $("result-status").textContent =
+          state.journey === "edit"
+            ? "one record"
+            : state.valid
+              ? state.dataStep === 3
+                ? "onSubmit called"
+                : "before submission"
+              : "onSubmit not called";
+        $("data-result").textContent =
+          state.journey === "save" && !state.valid
+            ? JSON.stringify(
+                {
+                  valid: false,
+                  issues: [
+                    { path: ["email"], message: "must match format email" },
+                  ],
+                },
+                null,
+                2,
+              )
+            : JSON.stringify({ name: "Alex Morgan", email }, null, 2);
+        inspect(entries[state.dataStep][0]);
+      }
+      document.querySelectorAll("[data-tab]").forEach((button, index) => {
+        button.addEventListener("click", () => activateTab(button.dataset.tab));
+        button.addEventListener("keydown", (event) => {
+          const names = ["setup", "render", "data"];
+          let next;
+          if (event.key === "ArrowRight") next = (index + 1) % 3;
+          if (event.key === "ArrowLeft") next = (index + 2) % 3;
+          if (event.key === "Home") next = 0;
+          if (event.key === "End") next = 2;
+          if (next !== undefined) {
+            event.preventDefault();
+            activateTab(names[next], true);
+          }
+        });
+      });
+      document
+        .querySelectorAll("[data-inspect]")
+        .forEach((button) =>
+          button.addEventListener("click", () =>
+            inspect(button.dataset.inspect),
+          ),
+        );
+      $("package-runner").addEventListener("change", (event) => {
+        state.runner = event.target.value;
+        updateGettingStarted();
+      });
+      $("aliases").addEventListener("change", (event) => {
+        state.alias = event.target.value;
+        const next = paths();
+        document
+          .querySelectorAll("[data-local-path]")
+          .forEach((el) => (el.textContent = next[el.dataset.localPath]));
+        inspect(state.inspector);
+        updateGettingStarted();
+      });
+      document.querySelectorAll("[data-mode]").forEach((button) =>
+        button.addEventListener("click", () => {
+          state.mode = button.dataset.mode;
+          updateRender();
+        }),
+      );
+      document.querySelectorAll("[data-schema-node]").forEach((button) =>
+        button.addEventListener("click", () => {
+          state.node = button.dataset.schemaNode;
+          updateRender();
+        }),
+      );
+      $("view").addEventListener("change", (event) => {
+        state.view = event.target.value;
+        updateRender();
+      });
+      $("host-style").addEventListener("change", (event) => {
+        state.style = event.target.value;
+        updateRender();
+      });
+      $("annotation-view").addEventListener("change", (event) => {
+        state.annotation = event.target.checked;
+        updateRender();
+      });
+      $("custom-renderer").addEventListener("change", (event) => {
+        state.custom = event.target.checked;
+        updateRender();
+      });
+      document.querySelectorAll("[data-render-step]").forEach((button) =>
+        button.addEventListener("click", () => {
+          state.renderStep = Number(button.dataset.renderStep);
+          updateRender();
+        }),
+      );
+      document.querySelectorAll("[data-journey]").forEach((button) =>
+        button.addEventListener("click", () => {
+          state.journey = button.dataset.journey;
+          state.dataStep = 0;
+          updateData();
+        }),
+      );
+      $("validation-case").addEventListener("change", (event) => {
+        state.valid = event.target.value === "valid";
+        updateData();
+      });
+      document.querySelectorAll("[data-next]").forEach((button) =>
+        button.addEventListener("click", () => {
+          if (button.dataset.next === "render") {
+            state.renderStep = Math.min(3, state.renderStep + 1);
+            updateRender();
+          } else {
+            state.dataStep = Math.min(3, state.dataStep + 1);
+            updateData();
+          }
+        }),
+      );
+      document.querySelectorAll("[data-restart]").forEach((button) =>
+        button.addEventListener("click", () => {
+          if (button.dataset.restart === "render") {
+            state.renderStep = 0;
+            updateRender();
+          } else {
+            state.dataStep = 0;
+            updateData();
+          }
+        }),
+      );
+      document
+        .querySelectorAll(".playground-link")
+        .forEach(
+          (link) =>
+            (link.href =
+              location.protocol === "file:"
+                ? "http://127.0.0.1:5173/"
+                : new URL("/", location.href).href),
+        );
+      updateGettingStarted();
+      inspect("ready");
+    </script>
+  </body>
+</html>

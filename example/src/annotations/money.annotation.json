@@ -1,0 +1,87 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/money",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "label": "Money",
+      "fields": [
+        { "name": "amount", "label": "Amount" },
+        { "name": "currency", "label": "Currency" },
+        { "rest": true }
+      ]
+    },
+    "compact": {
+      "label": "Money",
+      "rest": "omit",
+      "fields": [
+        { "name": "amount", "label": "Amount" },
+        { "name": "currency", "label": "Currency" }
+      ]
+    },
+    "detail": {
+      "label": "Monetary amount",
+      "layout": "stack",
+      "fields": [
+        {
+          "label": "Value",
+          "fields": [
+            {
+              "name": "amount",
+              "label": "Amount (minor units)",
+              "description": "Integer count of the currency's ISO 4217 minor unit. Stored and compared exactly; not a decimal and never converted to a major-unit figure here."
+            },
+            {
+              "name": "currency",
+              "label": "Currency code",
+              "description": "ISO 4217 alphabetic code, e.g. USD. Consumers join this against a minor-unit table to interpret the amount."
+            }
+          ]
+        },
+        { "rest": true }
+      ]
+    },
+    "identity": {
+      "label": "Money",
+      "rest": "omit",
+      "fields": [
+        { "name": "amount", "label": "Amount (minor units)" },
+        { "name": "currency", "label": "Currency" }
+      ]
+    },
+    "row": {
+      "label": "Money",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "amount", "label": "Amount (minor units)" },
+        { "name": "currency", "label": "Currency" }
+      ]
+    },
+    "card": {
+      "label": "Monetary amount",
+      "layout": "stack",
+      "fields": [
+        {
+          "label": "Value",
+          "fields": [
+            {
+              "name": "amount",
+              "label": "Amount (minor units)",
+              "description": "Integer count of the currency's ISO 4217 minor unit; stored exactly and never converted to a major-unit figure."
+            },
+            {
+              "name": "currency",
+              "label": "Currency code",
+              "description": "ISO 4217 alphabetic code, e.g. USD; join against a minor-unit table to interpret the amount."
+            }
+          ]
+        },
+        { "rest": true }
+      ]
+    }
+  }
+}

@@ -6,7 +6,12 @@ import {
   useSurface,
   type SurfaceProps,
 } from "@rusl-labs/surface";
-import { FieldScope, isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
+import {
+  FieldScope,
+  isRecord,
+  useFieldState,
+  useFormDrafts,
+} from "@rusl-labs/surface-shadcn";
 import {
   Field,
   FieldDescription,
@@ -15,9 +20,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Fallback } from "./fallback";
 
 function variantLabel(option: unknown, index: number): string {
@@ -32,12 +41,13 @@ function variantLabel(option: unknown, index: number): string {
 /** Each allOf branch is another Surface on the same data, not another tree walk. */
 export function AllOf({ data }: SurfaceProps) {
   const { schema, Surface, mode, view, dataApi } = useSurface();
+  const field = useFieldState();
   if (!Surface || !Array.isArray(schema?.allOf)) return <Fallback id="" />;
   return (
     <FieldGroup>
       {schema.allOf.map((branch, index) =>
         isRecord(branch) ? (
-          <FieldScope key={index} omitLabel>
+          <FieldScope key={index} omitLabel readOnly={field.readOnly}>
             <Surface
               id={`allOf:${index}`}
               schema={branch}
@@ -67,7 +77,12 @@ export function Union({ data }: SurfaceProps) {
     options: uiOptions,
   } = useSurface();
   const field = useFieldState();
-  const [choice, setChoice] = useState<{ index: number; from: unknown }>();
+  const [choice, setChoice] = useState<{
+    index: number;
+    from: unknown;
+    reset: number;
+  }>();
+  const { resetVersion } = useFormDrafts();
   const options = schema?.oneOf ?? schema?.anyOf;
   const [titles, setTitles] = useState<{ source: unknown; values: string[] }>();
   const resolver = uiOptions?.schemaResolver;
@@ -99,6 +114,7 @@ export function Union({ data }: SurfaceProps) {
       cancelled = true;
     };
   }, [options, resolver, document, documentUri, mode]);
+  // Check Reset during render, before the old branch can re-enforce its const.
   if (!Surface || !Array.isArray(options) || options.length === 0)
     return <Fallback id="" />;
 
@@ -126,7 +142,7 @@ export function Union({ data }: SurfaceProps) {
   );
   const marker = tag === undefined ? matched : tag;
   const selected =
-    choice && Object.is(choice.from, marker)
+    choice && choice.reset === resetVersion && Object.is(choice.from, marker)
       ? choice.index
       : matched >= 0
         ? matched
@@ -135,7 +151,7 @@ export function Union({ data }: SurfaceProps) {
           : 0;
   const branch = selected === undefined ? undefined : options[selected];
   const child = isRecord(branch) ? (
-    <FieldScope omitLabel>
+    <FieldScope omitLabel readOnly={field.readOnly}>
       <Surface
         key={selected}
         id={`union:${selected}`}
@@ -154,34 +170,50 @@ export function Union({ data }: SurfaceProps) {
     <FieldGroup>
       <Field data-invalid={field.invalid}>
         <FieldLabel htmlFor={field.controlId}>Variant</FieldLabel>
-        <NativeSelect
-          id={field.controlId}
-          value={selected === undefined ? "" : String(selected)}
+        <Select
+          value={selected === undefined ? null : String(selected)}
           disabled={field.readOnly}
-          aria-invalid={field.invalid}
-          aria-describedby={`${field.controlId}-help${field.invalid ? ` ${field.controlId}-errors` : ""}`}
-          onChange={(event) => {
-            if (!event.target.value) return;
+          onValueChange={(value) => {
+            if (!value) return;
             // Keep the current value, including data shared by allOf branches.
             // The chosen child owns its constraints, defaults, and fixed values.
-            setChoice({ index: Number(event.target.value), from: marker });
+            setChoice({
+              index: Number(value),
+              from: marker,
+              reset: resetVersion,
+            });
           }}
         >
-          <NativeSelectOption value="" disabled>
-            Choose a variant
-          </NativeSelectOption>
-          {options.map((option, index) => {
-            const label =
-              titles?.source === options
-                ? titles.values[index]
-                : variantLabel(option, index);
-            return (
-              <NativeSelectOption key={index} value={String(index)}>
-                {label}
-              </NativeSelectOption>
-            );
-          })}
-        </NativeSelect>
+          <SelectTrigger
+            id={field.controlId}
+            className="w-full"
+            aria-invalid={field.invalid}
+            aria-describedby={`${field.controlId}-help${field.invalid ? ` ${field.controlId}-errors` : ""}`}
+          >
+            <SelectValue placeholder="Choose a variant">
+              {selected === undefined
+                ? undefined
+                : titles?.source === options
+                  ? titles.values[selected]
+                  : variantLabel(options[selected], selected)}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {options.map((option, index) => {
+                const label =
+                  titles?.source === options
+                    ? titles.values[index]
+                    : variantLabel(option, index);
+                return (
+                  <SelectItem key={index} value={String(index)}>
+                    {label}
+                  </SelectItem>
+                );
+              })}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
         <FieldDescription id={`${field.controlId}-help`}>
           The selected variant validates the current data.
         </FieldDescription>

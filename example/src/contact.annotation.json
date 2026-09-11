@@ -11,11 +11,229 @@
           "label": "Contact details",
           "fields": [
             { "name": "name", "label": "Full name" },
-            { "name": "relationship", "label": "Relationship" },
+            { "name": "relationship", "label": "Relationship", "widget": { "name": "toggle-group" } },
             {
               "name": "email",
               "label": "Work email",
               "description": "Used for project correspondence."
+            },
+            {
+              "name": "phone",
+              "label": "Phone",
+              "display": {
+                "widget": {
+                  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/tel",
+                  "name": "tel",
+                  "format": "national"
+                }
+              }
+            },
+            {
+              "name": "budget",
+              "label": "Budget",
+              "input": {
+                "widget": {
+                  "name": "money",
+                  "currencies": ["USD", "AUD", "EUR"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "label": "Workspace",
+          "fields": [
+            {
+              "name": "location",
+              "label": "Location",
+              "widget": { "name": "collapsible", "defaultOpen": true },
+              "fields": [
+                { "name": "city", "label": "City" },
+                { "name": "timezone", "label": "Time zone" }
+              ]
+            },
+            {
+              "name": "tags",
+              "label": "Tags",
+              "itemLabel": "tag",
+              "addLabel": "Add tag",
+              "widget": {
+                "name": "list",
+                "add": { "appearance": "both", "icon": "plus" },
+                "remove": { "appearance": "tooltip", "icon": "trash" }
+              },
+              "display": { "widget": { "name": "list" } }
+            },
+            {
+              "name": "updates",
+              "label": "Receive project updates",
+              "widget": { "name": "switch" }
+            }
+          ]
+        },
+        {
+          "name": "notes",
+          "label": "Notes",
+          "input": {
+            "widget": {
+              "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea",
+              "name": "textarea",
+              "options": { "rows": 3 }
+            }
+          }
+        }
+      ]
+    },
+    "compact": {
+      "label": "Compact",
+      "description": "The essentials for a quick contact.",
+      "rest": "omit",
+      "fields": [
+        { "name": "name", "label": "Full name" },
+        { "name": "email", "label": "Email" },
+        { "name": "relationship", "label": "Relationship", "widget": { "name": "toggle-group" } },
+        {
+          "name": "location",
+          "label": "Location",
+          "rest": "omit",
+          "fields": [{ "name": "city", "label": "City" }]
+        },
+        {
+          "name": "tags",
+          "label": "Tags",
+          "itemLabel": "tag",
+          "addLabel": "Add tag"
+        },
+        {
+          "name": "updates",
+          "label": "Receive project updates",
+          "widget": { "name": "switch" },
+          "display": { "omit": true }
+        }
+      ]
+    },
+    "detail": {
+      "label": "Detailed",
+      "layout": "stack",
+      "fields": [
+        {
+          "label": "Contact",
+          "description": "Who this person is and how you know them.",
+          "fields": [
+            {
+              "name": "name",
+              "label": "Full name",
+              "description": "At least two characters."
+            },
+            {
+              "name": "relationship",
+              "label": "Relationship",
+              "description": "How this contact relates to you.",
+              "widget": { "name": "toggle-group" }
+            },
+            {
+              "name": "email",
+              "label": "Work email",
+              "description": "Used for project correspondence."
+            },
+            { "name": "phone", "label": "Phone" },
+            {
+              "name": "budget",
+              "label": "Budget",
+              "input": {
+                "widget": {
+                  "name": "money",
+                  "currencies": ["USD", "AUD", "EUR"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "label": "Workspace",
+          "description": "Where and how you collaborate.",
+          "fields": [
+            {
+              "name": "location",
+              "label": "Location",
+              "fields": [
+                {
+                  "name": "city",
+                  "label": "City",
+                  "description": "Primary working city."
+                },
+                { "name": "timezone", "label": "Time zone" }
+              ]
+            },
+            {
+              "name": "tags",
+              "label": "Tags",
+              "itemLabel": "tag",
+              "addLabel": "Add tag",
+              "description": "One to four short labels."
+            },
+            {
+              "name": "updates",
+              "label": "Receive project updates",
+              "description": "Email me about project changes.",
+              "widget": { "name": "switch" }
+            }
+          ]
+        },
+        {
+          "name": "notes",
+          "label": "Notes",
+          "description": "Anything else worth remembering.",
+          "input": {
+            "widget": {
+              "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea",
+              "name": "textarea",
+              "options": { "rows": 5 }
+            }
+          }
+        },
+        { "rest": true }
+      ]
+    },
+    "identity": {
+      "label": "Identity",
+      "rest": "omit",
+      "fields": [
+        { "name": "name", "label": "Full name" },
+        { "name": "email", "label": "Email" }
+      ]
+    },
+    "row": {
+      "label": "Row",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "name", "label": "Full name" },
+        { "name": "relationship", "label": "Relationship", "widget": { "name": "toggle-group" } },
+        { "name": "email", "label": "Email" }
+      ]
+    },
+    "card": {
+      "label": "Card",
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "Contact",
+          "fields": [
+            { "name": "name", "label": "Full name" },
+            { "name": "relationship", "label": "Relationship", "widget": { "name": "toggle-group" } },
+            { "name": "email", "label": "Email" },
+            { "name": "phone", "label": "Phone" },
+            {
+              "name": "budget",
+              "label": "Budget",
+              "input": {
+                "widget": {
+                  "name": "money",
+                  "currencies": ["USD", "AUD", "EUR"]
+                }
+              }
             }
           ]
         },
@@ -30,25 +248,13 @@
                 { "name": "timezone", "label": "Time zone" }
               ]
             },
+            { "name": "tags", "label": "Tags", "itemLabel": "tag" },
             {
-              "name": "tags",
-              "label": "Tags",
-              "itemLabel": "tag",
-              "addLabel": "Add tag"
-            },
-            { "name": "updates", "label": "Receive project updates" }
-          ]
-        },
-        {
-          "name": "notes",
-          "label": "Notes",
-          "input": {
-            "widget": {
-              "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea",
-              "name": "textarea",
-              "options": { "rows": 3 }
+              "name": "updates",
+              "label": "Receive project updates",
+              "widget": { "name": "switch" }
             }
-          }
+          ]
         }
       ]
     }

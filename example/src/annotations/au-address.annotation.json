@@ -1,0 +1,149 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/postal.au-address",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "label": "Australian address",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        { "name": "street1", "label": "Street" },
+        { "name": "street2", "label": "Street 2" },
+        { "name": "city", "label": "Suburb" },
+        { "name": "region", "label": "State/territory" },
+        { "name": "postalCode", "label": "Postcode" },
+        { "name": "countryCode", "label": "Country" },
+        { "rest": true }
+      ]
+    },
+    "compact": {
+      "label": "Australian address",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        { "name": "street1", "label": "Street" },
+        { "name": "city", "label": "Suburb" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "Postcode" },
+        { "name": "countryCode", "label": "Country" }
+      ]
+    },
+    "detail": {
+      "label": "Australian postal address",
+      "layout": "stack",
+      "fields": [
+        { "name": "$kind", "display": { "omit": true } },
+        {
+          "label": "Street",
+          "fields": [
+            {
+              "name": "street1",
+              "label": "Street address",
+              "description": "Primary delivery line, including unit or level where present, e.g. \"Unit 5, 10 Smith St\"."
+            },
+            {
+              "name": "street2",
+              "label": "Additional line",
+              "description": "Optional secondary delivery line."
+            }
+          ]
+        },
+        {
+          "label": "Locality",
+          "fields": [
+            {
+              "name": "city",
+              "label": "Suburb / locality",
+              "description": "Australian addressing's suburb line, held in the suite-uniform city property."
+            },
+            {
+              "name": "region",
+              "label": "State / territory",
+              "description": "ISO 3166-2:AU state or territory code, e.g. VIC, NSW."
+            },
+            {
+              "name": "postalCode",
+              "label": "Postcode",
+              "description": "Four-digit Australian postcode. Format only; not cross-checked against the region."
+            },
+            { "name": "countryCode", "label": "Country" }
+          ]
+        },
+        {
+          "label": "Address metadata",
+          "fields": [
+            {
+              "name": "contexts",
+              "label": "Contexts",
+              "itemLabel": "context",
+              "addLabel": "Add context",
+              "description": "Free-text roles this address serves, e.g. home, billing, shipping."
+            },
+            {
+              "name": "preference",
+              "label": "Preference",
+              "description": "Rank among a person's addresses; 1 = most preferred. Absent means unspecified."
+            },
+            {
+              "name": "geo",
+              "label": "Geo point",
+              "description": "Optional GeoJSON Point for the address location."
+            }
+          ]
+        },
+        { "rest": true }
+      ]
+    },
+    "identity": {
+      "label": "Australian address",
+      "rest": "omit",
+      "fields": [
+        { "name": "street1", "label": "Street" },
+        { "name": "city", "label": "Suburb" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "Postcode" }
+      ]
+    },
+    "row": {
+      "label": "Australian address",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "street1", "label": "Street" },
+        { "name": "city", "label": "Suburb" },
+        { "name": "region", "label": "State" },
+        { "name": "postalCode", "label": "Postcode" }
+      ]
+    },
+    "card": {
+      "label": "Australian postal address",
+      "layout": "stack",
+      "fields": [
+        {
+          "label": "Street",
+          "fields": [
+            { "name": "street1", "label": "Street address" },
+            { "name": "street2", "label": "Additional line" }
+          ]
+        },
+        {
+          "label": "Locality",
+          "fields": [
+            { "name": "city", "label": "Suburb / locality" },
+            {
+              "name": "region",
+              "label": "State / territory",
+              "description": "ISO 3166-2:AU state or territory code."
+            },
+            { "name": "postalCode", "label": "Postcode" },
+            { "name": "countryCode", "label": "Country" }
+          ]
+        },
+        { "rest": true }
+      ]
+    }
+  }
+}

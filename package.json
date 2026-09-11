@@ -24,19 +24,25 @@
     "build:registry": "shadcn build --output public/r",
     "typecheck": "tsc --noEmit",
     "test": "bun test src",
-    "check": "bun run typecheck && bun run test && bun run build && bun run build:registry && bun run build:example",
+    "check": "bun run check:runtime && bun run typecheck && bun run test && bun run build && bun run build:registry && bun run build:example",
+    "check:runtime": "bun scripts/assert-surface-runtime.ts",
     "prepack": "bun run build",
     "dev": "vite --config example/vite.config.ts",
+    "test:next": "bun scripts/test-next.ts",
+    "test:next:clean": "bun scripts/test-next.ts clean",
     "build:example": "vite build --config example/vite.config.ts"
   },
   "peerDependencies": {
-    "@rusl-labs/surface": "0.1.0",
+    "@rusl-labs/surface": ">=0.1.1",
     "react": "^19.2.0"
   },
   "devDependencies": {
-    "@rusl-labs/surface": "0.1.0",
+    "@happy-dom/global-registrator": "^20.0.0",
+    "@rusl-labs/surface": "file:../schema-driven-ui/packages/core",
     "@rusl-labs/surface-ajv": "0.1.0",
     "@tailwindcss/vite": "^4.1.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.7",
     "@types/bun": "^1.4.1",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
@@ -51,5 +57,14 @@
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "vite": "^7.0.0"
+  },
+  "overrides": {
+    "@rusl-labs/surface": "file:../schema-driven-ui/packages/core"
+  },
+  "dependencies": {
+    "@codemirror/view": "^6.43.11",
+    "@uiw/codemirror-extensions-langs": "^4.25.11",
+    "@uiw/react-codemirror": "^4.25.11",
+    "libphonenumber-js": "^1.13.12"
   }
 }

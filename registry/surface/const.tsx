@@ -49,6 +49,9 @@ export function ConstInput({ id }: SurfaceProps): ReactElement | null {
     <FieldChrome state={fs}>
       <Input
         id={fs.controlId}
+        aria-label={fs.showLabels && fs.label ? undefined : fs.label || "Value"}
+        aria-invalid={fs.invalid || undefined}
+        required={fs.required}
         value={text}
         readOnly
         aria-describedby={fs.describedBy}

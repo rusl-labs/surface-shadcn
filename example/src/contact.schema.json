@@ -10,6 +10,12 @@
     "email": {
       "$ref": "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/email"
     },
+    "phone": {
+      "$ref": "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/phone"
+    },
+    "budget": {
+      "$ref": "https://resources.rusl.com/resources/pragmatic/schemas/money"
+    },
     "relationship": {
       "type": "string",
       "title": "Relationship",

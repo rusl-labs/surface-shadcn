@@ -1,0 +1,696 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/contact.card",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        { "name": "name", "label": "Name" },
+        { "name": "organization", "label": "Organization" },
+        { "name": "title", "label": "Title" },
+        { "name": "kind", "label": "Kind" },
+        {
+          "name": "emails",
+          "label": "Emails",
+          "itemLabel": "email",
+          "addLabel": "Add email",
+          "view": "compact",
+          "widget": {
+            "name": "list",
+            "marker": "none",
+            "add": { "appearance": "icon", "icon": "plus" },
+            "remove": { "appearance": "tooltip", "icon": "trash" }
+          }
+        },
+        {
+          "name": "phones",
+          "label": "Phones",
+          "itemLabel": "phone",
+          "addLabel": "Add phone",
+          "view": "compact",
+          "widget": {
+            "name": "list",
+            "marker": "none",
+            "add": { "appearance": "icon", "icon": "plus" },
+            "remove": { "appearance": "tooltip", "icon": "trash" }
+          }
+        },
+        {
+          "name": "links",
+          "label": "Links",
+          "itemLabel": "link",
+          "addLabel": "Add link",
+          "view": "compact",
+          "widget": {
+            "name": "list",
+            "marker": "none",
+            "add": { "appearance": "icon", "icon": "plus" },
+            "remove": { "appearance": "tooltip", "icon": "trash" }
+          }
+        },
+        {
+          "label": "",
+          "widget": {
+            "name": "collapsible",
+            "defaultOpen": false,
+            "options": { "label": "More fields" }
+          },
+          "fields": [
+            { "name": "nameComponents", "label": "Name parts" },
+            {
+              "name": "addresses",
+              "label": "Addresses",
+              "itemLabel": "address",
+              "addLabel": "Add address"
+            },
+            {
+              "name": "socialHandles",
+              "label": "Social handles",
+              "itemLabel": "handle",
+              "addLabel": "Add handle"
+            },
+            {
+              "name": "externalReferences",
+              "label": "External references",
+              "itemLabel": "reference",
+              "addLabel": "Link a system"
+            },
+            { "name": "metadata", "label": "Metadata" }
+          ]
+        }
+      ]
+    },
+    "compact": {
+      "label": "Compact",
+      "description": "8px module (Nova --spacing). Ratios 1∶2 and 2∶3. Generating figures: identity = name as title, channels as a list; card = name then channels; row = one horizontal scan line; detail = name as title, title and organization as caption, channels as a list.",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        { "name": "name", "label": "Name" },
+        { "name": "organization", "label": "Organization" },
+        {
+          "name": "emails",
+          "label": "Emails",
+          "view": "compact",
+          "itemLabel": "email",
+          "addLabel": "Add email"
+        },
+        {
+          "name": "phones",
+          "label": "Phones",
+          "view": "compact",
+          "itemLabel": "phone",
+          "addLabel": "Add phone"
+        }
+      ]
+    },
+    "detail": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "label": "",
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "name",
+              "label": "Display name",
+              "display": { "label": "" }
+            },
+            {
+              "name": "title",
+              "label": "Job title",
+              "display": { "label": "" }
+            },
+            {
+              "name": "organization",
+              "label": "Organization",
+              "display": { "label": "" }
+            },
+            {
+              "label": "",
+              "widget": { "name": "separator" },
+              "fields": [
+                {
+                  "name": "emails",
+                  "label": "Emails",
+                  "itemLabel": "email",
+                  "widget": { "name": "list", "marker": "none" },
+                  "display": { "label": "", "view": "identity" }
+                },
+                {
+                  "name": "phones",
+                  "label": "Phones",
+                  "itemLabel": "phone",
+                  "widget": { "name": "list", "marker": "none" },
+                  "display": { "label": "", "view": "identity" }
+                },
+                {
+                  "name": "links",
+                  "label": "Links",
+                  "itemLabel": "link",
+                  "widget": { "name": "list", "marker": "none" },
+                  "display": { "label": "", "view": "identity" }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "",
+          "display": { "omit": true },
+          "fields": [
+            { "name": "name", "label": "Name" },
+            { "name": "organization", "label": "Organization" },
+            { "name": "title", "label": "Title" },
+            { "name": "kind", "label": "Kind" }
+          ]
+        },
+        {
+          "label": "",
+          "widget": { "name": "separator" },
+          "display": { "omit": true },
+          "fields": [
+            {
+              "name": "emails",
+              "label": "Emails",
+              "view": "detail",
+              "itemLabel": "email",
+              "addLabel": "Add email",
+              "widget": {
+                "name": "list",
+                "marker": "none",
+                "add": { "appearance": "icon", "icon": "plus" },
+                "remove": { "appearance": "tooltip", "icon": "trash" }
+              }
+            },
+            {
+              "name": "phones",
+              "label": "Phones",
+              "view": "detail",
+              "itemLabel": "phone",
+              "addLabel": "Add phone",
+              "widget": {
+                "name": "list",
+                "marker": "none",
+                "add": { "appearance": "icon", "icon": "plus" },
+                "remove": { "appearance": "tooltip", "icon": "trash" }
+              }
+            },
+            {
+              "name": "links",
+              "label": "Links",
+              "view": "detail",
+              "itemLabel": "link",
+              "addLabel": "Add link",
+              "widget": {
+                "name": "list",
+                "marker": "none",
+                "add": { "appearance": "icon", "icon": "plus" },
+                "remove": { "appearance": "tooltip", "icon": "trash" }
+              }
+            }
+          ]
+        },
+        {
+          "label": "",
+          "widget": {
+            "name": "collapsible",
+            "defaultOpen": false,
+            "options": { "label": "More fields" }
+          },
+          "fields": [
+            {
+              "name": "nameComponents",
+              "label": "Name parts",
+              "fields": [
+                { "name": "prefix", "label": "Prefix" },
+                { "name": "given", "label": "Given" },
+                { "name": "middle", "label": "Middle" },
+                { "name": "family", "label": "Family" },
+                { "name": "suffix", "label": "Suffix" }
+              ]
+            },
+            {
+              "name": "addresses",
+              "label": "Addresses",
+              "itemLabel": "address",
+              "addLabel": "Add address"
+            },
+            {
+              "name": "socialHandles",
+              "label": "Social handles",
+              "itemLabel": "handle",
+              "addLabel": "Add handle"
+            },
+            {
+              "name": "externalReferences",
+              "label": "External references",
+              "itemLabel": "reference",
+              "addLabel": "Link a system"
+            },
+            { "name": "metadata", "label": "Metadata" }
+          ]
+        }
+      ]
+    },
+    "identity": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "name": "name",
+          "label": "Name",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "emails",
+          "label": "Emails",
+          "view": "identity",
+          "itemLabel": "email",
+          "widget": { "name": "list", "marker": "none" },
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "phones",
+          "label": "Phones",
+          "view": "identity",
+          "itemLabel": "phone",
+          "widget": { "name": "list", "marker": "none" },
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "links",
+          "label": "Links",
+          "view": "identity",
+          "itemLabel": "link",
+          "widget": { "name": "list", "marker": "none" },
+          "display": { "label": "", "description": "" }
+        }
+      ]
+    },
+    "row": {
+      "label": "",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "name": "name",
+          "label": "Name",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "organization",
+          "label": "Organization",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "title",
+          "label": "Title",
+          "display": { "label": "", "description": "" }
+        }
+      ]
+    },
+    "card": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "name": "name",
+          "label": "Name",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "title",
+          "label": "Title",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "organization",
+          "label": "Organization",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "emails",
+          "label": "Emails",
+          "view": "identity",
+          "itemLabel": "email",
+          "widget": { "name": "list", "marker": "none" },
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "phones",
+          "label": "Phones",
+          "view": "identity",
+          "itemLabel": "phone",
+          "widget": { "name": "list", "marker": "none" },
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "links",
+          "label": "Links",
+          "view": "identity",
+          "itemLabel": "link",
+          "widget": { "name": "list", "marker": "none" },
+          "display": { "label": "", "description": "" }
+        }
+      ]
+    }
+  },
+  "defs": {
+    "emailEntry": {
+      "views": {
+        "default": {
+          "fields": [
+            { "name": "value", "label": "Email" },
+            {
+              "name": "contexts",
+              "label": "Contexts",
+              "itemLabel": "context",
+              "addLabel": "Add context"
+            },
+            { "name": "preference", "label": "Preference" },
+            { "rest": true }
+          ]
+        },
+        "compact": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Email",
+              "input": {
+                "label": "",
+                "widget": { "name": "email", "placeholder": "Email" }
+              },
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "detail": {
+          "label": "",
+          "layout": "stack",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Email",
+              "input": {
+                "label": "",
+                "widget": { "name": "email", "placeholder": "Email" }
+              }
+            },
+            {
+              "label": "",
+              "widget": {
+                "name": "collapsible",
+                "defaultOpen": false,
+                "options": { "label": "More" }
+              },
+              "fields": [
+                {
+                  "name": "contexts",
+                  "label": "Used for",
+                  "itemLabel": "context",
+                  "addLabel": "Add context"
+                },
+                { "name": "preference", "label": "Priority" },
+                { "rest": true }
+              ]
+            }
+          ]
+        },
+        "identity": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Email",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "row": {
+          "label": "",
+          "direction": "horizontal",
+          "layout": "stack",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Email",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "card": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Email",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        }
+      }
+    },
+    "phoneEntry": {
+      "views": {
+        "default": {
+          "fields": [
+            { "name": "value", "label": "Phone" },
+            { "name": "kind", "label": "Type" },
+            { "name": "extension", "label": "Ext." },
+            {
+              "name": "contexts",
+              "label": "Contexts",
+              "itemLabel": "context",
+              "addLabel": "Add context"
+            },
+            { "name": "preference", "label": "Preference" },
+            { "rest": true }
+          ]
+        },
+        "compact": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Phone",
+              "input": {
+                "label": "",
+                "widget": { "name": "tel", "placeholder": "Phone" }
+              },
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "detail": {
+          "label": "",
+          "layout": "stack",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Phone",
+              "input": {
+                "label": "",
+                "widget": { "name": "tel", "placeholder": "Phone" }
+              }
+            },
+            {
+              "name": "kind",
+              "label": "Type",
+              "input": {
+                "label": "",
+                "widget": { "name": "input", "placeholder": "Type" }
+              }
+            },
+            {
+              "label": "",
+              "widget": {
+                "name": "collapsible",
+                "defaultOpen": false,
+                "options": { "label": "More" }
+              },
+              "fields": [
+                { "name": "extension", "label": "Extension" },
+                {
+                  "name": "contexts",
+                  "label": "Used for",
+                  "itemLabel": "context",
+                  "addLabel": "Add context"
+                },
+                { "name": "preference", "label": "Priority" },
+                { "rest": true }
+              ]
+            }
+          ]
+        },
+        "identity": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Phone",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "row": {
+          "label": "",
+          "direction": "horizontal",
+          "layout": "stack",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Phone",
+              "display": { "label": "", "description": "" }
+            },
+            {
+              "name": "kind",
+              "label": "Type",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "card": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "Phone",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        }
+      }
+    },
+    "linkEntry": {
+      "views": {
+        "default": {
+          "fields": [
+            { "name": "value", "label": "URL" },
+            { "name": "kind", "label": "Kind" },
+            {
+              "name": "contexts",
+              "label": "Contexts",
+              "itemLabel": "context",
+              "addLabel": "Add context"
+            },
+            { "name": "preference", "label": "Preference" },
+            { "rest": true }
+          ]
+        },
+        "compact": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "URL",
+              "input": {
+                "label": "",
+                "widget": { "name": "input", "placeholder": "URL" }
+              },
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "detail": {
+          "label": "",
+          "layout": "stack",
+          "fields": [
+            {
+              "name": "value",
+              "label": "URL",
+              "input": {
+                "label": "",
+                "widget": { "name": "input", "placeholder": "URL" }
+              }
+            },
+            {
+              "label": "",
+              "widget": {
+                "name": "collapsible",
+                "defaultOpen": false,
+                "options": { "label": "More" }
+              },
+              "fields": [
+                { "name": "kind", "label": "Kind" },
+                {
+                  "name": "contexts",
+                  "label": "Used for",
+                  "itemLabel": "context",
+                  "addLabel": "Add context"
+                },
+                { "name": "preference", "label": "Priority" },
+                { "rest": true }
+              ]
+            }
+          ]
+        },
+        "identity": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "URL",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "row": {
+          "label": "",
+          "direction": "horizontal",
+          "layout": "stack",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "URL",
+              "display": { "label": "", "description": "" }
+            },
+            {
+              "name": "kind",
+              "label": "Kind",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        },
+        "card": {
+          "label": "",
+          "rest": "omit",
+          "fields": [
+            {
+              "name": "value",
+              "label": "URL",
+              "display": { "label": "", "description": "" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

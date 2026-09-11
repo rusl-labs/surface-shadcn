@@ -1,13 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   InMemorySchemaFetchResolver,
   schemaAtUri,
   type Schema,
   type SchemaResolver,
 } from "@rusl-labs/surface";
-import { isRecord } from "@rusl-labs/surface-shadcn";
+import { isRecord, shadcnSchemas } from "@rusl-labs/surface-shadcn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Field,
   FieldDescription,
@@ -15,9 +16,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Card,
@@ -33,6 +38,7 @@ const examples = [
   ["Product", "commerce.product"],
   ["External reference", "external-reference"],
   ["Contact card", "contact.card"],
+  ["US address", "us-address"],
   ["Money", "money"],
   ["Contact scalars", "contact.scalars"],
 ].map(([label, slug]) => ({
@@ -133,6 +139,7 @@ export const demoSelection: SchemaSelection = {
   url: "",
   title: "Contact",
   resolver: new InMemorySchemaFetchResolver({
+    ...shadcnSchemas,
     [contactSchema.$id]: contactSchema,
     [contactScalars.$id]: contactScalars,
   }),
@@ -151,6 +158,42 @@ export function SchemaSource({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const request = useRef(0);
+  const [schemaJson, setSchemaJson] = useState(() =>
+    JSON.stringify(selection.document, null, 2),
+  );
+  const [jsonError, setJsonError] = useState("");
+  useEffect(() => {
+    setSchemaJson(JSON.stringify(selection.document, null, 2));
+    setJsonError("");
+  }, [selection.document]);
+
+  function applySchemaJson() {
+    try {
+      const document: unknown = JSON.parse(schemaJson);
+      if (!isRecord(document)) {
+        throw new Error(
+          "Surface needs a JSON Schema object, not an array, scalar, or boolean schema.",
+        );
+      }
+      const base = "https://surface.local/playground/schema.json";
+      const uri =
+        typeof document.$id === "string"
+          ? new URL(document.$id, base).href
+          : base;
+      const resolver = new InMemorySchemaFetchResolver({
+        ...shadcnSchemas,
+        [uri]: document,
+      });
+      const next = selectSchema(document, uri, uri, resolver);
+      request.current++;
+      commit(next);
+      setJsonError("");
+    } catch (cause) {
+      setJsonError(
+        cause instanceof Error ? cause.message : "Invalid schema JSON.",
+      );
+    }
+  }
 
   function commit(next: SchemaSelection) {
     setUrl(next.url);
@@ -174,9 +217,9 @@ export function SchemaSource({
         : undefined;
       source.hash = "";
       const documentUrl = source.href;
-      const fetched = await new InMemorySchemaFetchResolver().resolveDocument(
-        documentUrl,
-      );
+      const fetched = await new InMemorySchemaFetchResolver(
+        shadcnSchemas,
+      ).resolveDocument(documentUrl);
       if (!isRecord(fetched))
         throw new Error(
           "Surface needs a JSON Schema object, not an array, scalar, or boolean schema.",
@@ -186,6 +229,7 @@ export function SchemaSource({
           ? new URL(fetched.$id, documentUrl).href
           : documentUrl;
       const resolver = new InMemorySchemaFetchResolver({
+        ...shadcnSchemas,
         [documentUrl]: fetched,
         [documentUri]: fetched,
       });
@@ -211,12 +255,12 @@ export function SchemaSource({
   }
 
   return (
-    <Card className="mb-8">
+    <Card>
       <CardHeader>
         <CardTitle>Schema source</CardTitle>
         <CardDescription>
-          Bring a schema URL. References use the same Surface resolver as the
-          editor.
+          Load any schema URL or paste and edit JSON locally. References use the
+          same Surface resolver as the editor.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -260,8 +304,7 @@ export function SchemaSource({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel htmlFor="schema-example">Examples</FieldLabel>
-              <NativeSelect
-                id="schema-example"
+              <Select
                 value={
                   selection.isDemo
                     ? "demo"
@@ -269,36 +312,50 @@ export function SchemaSource({
                           (example) => example.url === selection.documentUrl,
                         )
                       ? selection.documentUrl
-                      : ""
+                      : null
                 }
-                onChange={(event) => {
-                  if (event.target.value === "demo") {
+                onValueChange={(value) => {
+                  if (value === "demo") {
                     request.current++;
                     commit(demoSelection);
-                  } else if (event.target.value) void load(event.target.value);
+                  } else if (value) void load(value);
                 }}
               >
-                <NativeSelectOption value="">
-                  Choose an example
-                </NativeSelectOption>
-                <NativeSelectOption value="demo">
-                  Built-in contact demo
-                </NativeSelectOption>
-                {examples.map((example) => (
-                  <NativeSelectOption key={example.url} value={example.url}>
-                    {example.label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
+                <SelectTrigger id="schema-example" className="w-full">
+                  <SelectValue placeholder="Choose an example">
+                    {selection.isDemo
+                      ? "Built-in contact demo"
+                      : examples.find(
+                          (example) => example.url === selection.documentUrl,
+                        )?.label}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="demo">Built-in contact demo</SelectItem>
+                    {examples.map((example) => (
+                      <SelectItem key={example.url} value={example.url}>
+                        {example.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </Field>
             {selection.choices.length > 1 && (
               <Field>
                 <FieldLabel htmlFor="schema-definition">Definition</FieldLabel>
-                <NativeSelect
-                  id="schema-definition"
-                  value={selection.pointer}
+                <Select
+                  value={String(
+                    selection.choices.findIndex(
+                      (choice) => choice.pointer === selection.pointer,
+                    ),
+                  )}
                   disabled={loading}
-                  onChange={(event) => {
+                  onValueChange={(value) => {
+                    if (value === null) return;
+                    const choice = selection.choices[Number(value)];
+                    if (!choice) return;
                     request.current++;
                     commit(
                       selectSchema(
@@ -306,23 +363,67 @@ export function SchemaSource({
                         selection.documentUrl,
                         selection.documentUri,
                         selection.resolver,
-                        event.target.value,
+                        choice.pointer,
                       ),
                     );
                   }}
                 >
-                  {selection.choices.map((choice) => (
-                    <NativeSelectOption
-                      key={choice.pointer}
-                      value={choice.pointer}
-                    >
-                      {choice.label}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  <SelectTrigger id="schema-definition" className="w-full">
+                    <SelectValue>
+                      {
+                        selection.choices.find(
+                          (choice) => choice.pointer === selection.pointer,
+                        )?.label
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {selection.choices.map((choice, index) => (
+                        <SelectItem key={choice.pointer} value={String(index)}>
+                          {choice.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
             )}
           </div>
+          <details>
+            <summary className="cursor-pointer">Edit schema JSON</summary>
+            <form
+              className="mt-4 flex flex-col gap-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                applySchemaJson();
+              }}
+            >
+              <Field data-invalid={Boolean(jsonError)}>
+                <FieldLabel htmlFor="schema-json">Schema JSON</FieldLabel>
+                <Textarea
+                  id="schema-json"
+                  value={schemaJson}
+                  onChange={(event) => setSchemaJson(event.target.value)}
+                  className="max-h-96 min-h-64"
+                  spellCheck={false}
+                  aria-invalid={Boolean(jsonError)}
+                  aria-describedby={jsonError ? "schema-json-error" : undefined}
+                />
+                {jsonError && (
+                  <Alert variant="destructive" id="schema-json-error">
+                    <AlertTitle>Could not apply schema</AlertTitle>
+                    <AlertDescription>
+                      {jsonError} Your current editor has been kept.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </Field>
+              <Button type="submit" className="self-start">
+                Apply schema
+              </Button>
+            </form>
+          </details>
           {error && (
             <Alert variant="destructive" id="schema-load-error">
               <AlertTitle>Could not load schema</AlertTitle>
@@ -331,20 +432,18 @@ export function SchemaSource({
               </AlertDescription>
             </Alert>
           )}
-          <p className="text-xs text-muted-foreground" aria-live="polite">
+          <FieldDescription aria-live="polite">
             {loading ? (
               "Loading schema…"
             ) : (
               <>
-                Rendering <strong>{selection.title}</strong>
-                <span className="mt-1 block break-all">
-                  {selection.isDemo
-                    ? "Built-in annotated example"
-                    : selection.url}
-                </span>
+                Rendering {selection.title}
+                {selection.isDemo
+                  ? " — built-in annotated example"
+                  : ` — ${selection.url}`}
               </>
             )}
-          </p>
+          </FieldDescription>
         </FieldGroup>
       </CardContent>
     </Card>

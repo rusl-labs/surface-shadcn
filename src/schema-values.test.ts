@@ -232,3 +232,28 @@ test("prepares chained refs and sibling properties together", async () => {
   );
   expect(result).toEqual({ inherited: "base", local: "sibling" });
 });
+
+test("honors falsy const and default values, not just truthy ones", async () => {
+  // Whole-node const forces a falsy value over present data; a truthiness
+  // check (`if (node.const)`) would wrongly leave 0 / false / "" as the data.
+  expect(await applyConstAndDefaults({ const: 0 }, 99, noResolver)).toBe(0);
+  expect(await applyConstAndDefaults({ const: false }, true, noResolver)).toBe(
+    false,
+  );
+  expect(await applyConstAndDefaults({ const: "" }, "x", noResolver)).toBe("");
+  // Default fills a genuinely absent slot even when the default itself is falsy.
+  expect(
+    await applyConstAndDefaults(
+      { type: "integer", default: 0 },
+      undefined,
+      noResolver,
+    ),
+  ).toBe(0);
+  expect(
+    await applyConstAndDefaults(
+      { type: "boolean", default: false },
+      undefined,
+      noResolver,
+    ),
+  ).toBe(false);
+});

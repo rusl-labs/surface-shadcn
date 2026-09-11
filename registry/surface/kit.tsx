@@ -4,7 +4,26 @@ import {
   type RegistryKit,
   type SurfaceRenderer,
 } from "@rusl-labs/surface";
-import { SHADCN_TEXTAREA_ID } from "@rusl-labs/surface-shadcn";
+import {
+  SHADCN_ACCORDION_ID,
+  SHADCN_CAROUSEL_ID,
+  SHADCN_CODE_ID,
+  SHADCN_COLLAPSIBLE_ID,
+  SHADCN_COMBOBOX_ID,
+  SHADCN_DATE_ID,
+  SHADCN_DATETIME_ID,
+  SHADCN_EMAIL_ID,
+  SHADCN_INPUT_ID,
+  SHADCN_LIST_ID,
+  SHADCN_MEDIA_ID,
+  SHADCN_MONEY_ID,
+  SHADCN_RADIO_GROUP_ID,
+  SHADCN_SWITCH_ID,
+  SHADCN_TABLE_ID,
+  SHADCN_TEL_ID,
+  SHADCN_TEXTAREA_ID,
+  SHADCN_TOGGLE_GROUP_ID,
+} from "@rusl-labs/surface-shadcn";
 import { ArrayDisplay, ArrayInput } from "./array";
 import { BooleanDisplay, BooleanInput } from "./boolean";
 import { ConstDisplay, ConstInput } from "./const";
@@ -17,19 +36,37 @@ import { ShadcnRoot } from "./root";
 import { StringDisplay, StringInput } from "./string";
 import { TextareaDisplay, TextareaInput } from "./textarea";
 import { AllOf, Union } from "./composition";
+import { PhoneDisplay, PhoneInput } from "./phone";
+import { MoneyDisplay, MoneyInput } from "./money";
+import { US_ADDRESS_ID, UsAddressDisplay, UsAddressInput } from "./address";
+import { MediaDisplay } from "./media";
+import {
+  ComboboxDisplay,
+  ComboboxInput,
+  RadioGroupDisplay,
+  RadioGroupInput,
+  ToggleGroupDisplay,
+  ToggleGroupInput,
+} from "./choices";
+import { SwitchDisplay, SwitchInput } from "./switch";
+import { CodeDisplay, CodeInput } from "./code";
+import { DateDisplay, DateInput, DateTimeDisplay, DateTimeInput } from "./date";
+import {
+  CarouselDisplay,
+  CarouselInput,
+  ListDisplay,
+  ListInput,
+  TableDisplay,
+  TableInput,
+} from "./collection";
+import { AccordionSurface, CollapsibleSurface } from "./disclosure";
 
-/**
- * Well-known vocabulary ids reused from the published default kit. These are
- * stable URIs, aliased to the local renderers so an app using the default-kit
- * `email` / `input` widgets — or a `$ref` to the pragmatic contact email
- * scalar — resolves without per-schema wiring.
- */
-const DEFAULT_KIT_ID =
-  "https://resources.rusl.com/resources/rusl/schemas/surface.default-kit";
-const DEFAULT_KIT_EMAIL = `${DEFAULT_KIT_ID}#/$defs/email`;
-const DEFAULT_KIT_INPUT = `${DEFAULT_KIT_ID}#/$defs/input`;
 const EMAIL_SCALAR_ID =
   "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/email";
+const PHONE_SCALAR_ID =
+  "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/phone";
+const MONEY_SCHEMA_ID =
+  "https://resources.rusl.com/resources/pragmatic/schemas/money";
 
 function perMode(
   key: string,
@@ -73,7 +110,26 @@ export function createShadcnKit(options: ShadcnKitOptions = {}): RegistryKit {
     ...perMode("object", ObjectInput, ObjectDisplay),
     ...perMode("array", ArrayInput, ArrayDisplay),
     ...perMode("email", EmailInput, EmailDisplay),
+    ...perMode("tel", PhoneInput, PhoneDisplay),
+    // No view restriction: identity, card, row, and default share this renderer.
+    ...perMode("money", MoneyInput, MoneyDisplay),
+    ...perMode("us-address", UsAddressInput, UsAddressDisplay),
     ...perMode("textarea", TextareaInput, TextareaDisplay),
+    { key: "media", mode: "display", view: "default", component: MediaDisplay },
+    { key: "media", mode: "display", view: "card", component: MediaDisplay },
+    ...perMode("date", DateInput, DateDisplay),
+    ...perMode("datetime", DateTimeInput, DateTimeDisplay),
+    { key: "table", mode: "display", component: TableDisplay },
+    { key: "table", mode: "input", component: TableInput },
+    ...perMode("list", ListInput, ListDisplay),
+    ...perMode("carousel", CarouselInput, CarouselDisplay),
+    ...perMode("combobox", ComboboxInput, ComboboxDisplay),
+    ...perMode("radio-group", RadioGroupInput, RadioGroupDisplay),
+    ...perMode("toggle-group", ToggleGroupInput, ToggleGroupDisplay),
+    ...perMode("switch", SwitchInput, SwitchDisplay),
+    ...perMode("code", CodeInput, CodeDisplay),
+    ...perMode("accordion", AccordionSurface, AccordionSurface),
+    ...perMode("collapsible", CollapsibleSurface, CollapsibleSurface),
     ...perMode("allOf", AllOf, AllOf),
     ...perMode("oneOf", Union, Union),
   ];
@@ -82,14 +138,33 @@ export function createShadcnKit(options: ShadcnKitOptions = {}): RegistryKit {
     fallback: Fallback,
     Root: ShadcnRoot,
     aliases: {
-      [DEFAULT_KIT_EMAIL]: "email",
       [EMAIL_SCALAR_ID]: "email",
+      [PHONE_SCALAR_ID]: "tel",
+      phone: "tel",
+      [MONEY_SCHEMA_ID]: "money",
+      [US_ADDRESS_ID]: "us-address",
       "idn-email": "email",
       input: "string",
       integer: "number",
       anyOf: "oneOf",
-      [DEFAULT_KIT_INPUT]: "string",
+      [SHADCN_INPUT_ID]: "string",
+      [SHADCN_EMAIL_ID]: "email",
       [SHADCN_TEXTAREA_ID]: "textarea",
+      [SHADCN_TEL_ID]: "tel",
+      [SHADCN_MONEY_ID]: "money",
+      [SHADCN_MEDIA_ID]: "media",
+      [SHADCN_DATE_ID]: "date",
+      [SHADCN_DATETIME_ID]: "datetime",
+      [SHADCN_TABLE_ID]: "table",
+      [SHADCN_COMBOBOX_ID]: "combobox",
+      [SHADCN_RADIO_GROUP_ID]: "radio-group",
+      [SHADCN_TOGGLE_GROUP_ID]: "toggle-group",
+      [SHADCN_SWITCH_ID]: "switch",
+      [SHADCN_CODE_ID]: "code",
+      [SHADCN_LIST_ID]: "list",
+      [SHADCN_CAROUSEL_ID]: "carousel",
+      [SHADCN_ACCORDION_ID]: "accordion",
+      [SHADCN_COLLAPSIBLE_ID]: "collapsible",
       ...options.aliases,
     },
     resolvers: [...defaults, ...(options.resolvers ?? [])],

@@ -1,0 +1,73 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "defs": {
+    "email": {
+      "views": {
+        "default": {
+          "label": "Email address",
+          "description": "Work or personal email.",
+          "fields": [{ "rest": true }]
+        },
+        "compact": {
+          "label": "Email",
+          "fields": [{ "rest": true }]
+        },
+        "detail": {
+          "label": "Email address",
+          "description": "Validated lightly (RFC-derived length cap, no strict pattern). The only real proof of reachability is a confirmation message; store the address as typed.",
+          "fields": [{ "rest": true }]
+        },
+        "identity": {
+          "label": "Email address",
+          "fields": [{ "rest": true }]
+        },
+        "row": {
+          "label": "Email",
+          "direction": "horizontal",
+          "fields": [{ "rest": true }]
+        },
+        "card": {
+          "label": "Email address",
+          "description": "The person's email. Stored as typed; reachability is only ever confirmed by a message sent to it.",
+          "fields": [{ "rest": true }]
+        }
+      }
+    },
+    "phone": {
+      "views": {
+        "default": {
+          "label": "Phone number",
+          "description": "Best contact number.",
+          "fields": [{ "rest": true }]
+        },
+        "compact": {
+          "label": "Phone",
+          "fields": [{ "rest": true }]
+        },
+        "detail": {
+          "label": "E.164 phone number",
+          "description": "International storage form: a leading \"+\" then 1-15 digits, country code first, with no spaces or separators (e.g. +14155550100).",
+          "fields": [{ "rest": true }]
+        },
+        "identity": {
+          "label": "Phone number",
+          "fields": [{ "rest": true }]
+        },
+        "row": {
+          "label": "Phone",
+          "direction": "horizontal",
+          "fields": [{ "rest": true }]
+        },
+        "card": {
+          "label": "E.164 phone number",
+          "description": "Stored in international E.164 form (leading \"+\", country code first); render regionally as needed.",
+          "fields": [{ "rest": true }]
+        }
+      }
+    }
+  }
+}

@@ -1,9 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import type { ReactElement } from "react";
 import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
 import { FieldScope, isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
-import { Button } from "@/components/ui/button";
+import { ItemActionButton } from "./actions";
 import {
   FieldDescription,
   FieldError,
@@ -18,6 +19,8 @@ import { Fallback } from "./fallback";
 export function ArrayInput({ data }: SurfaceProps): ReactElement {
   const fs = useFieldState();
   const { schema, entry, dataApi, Surface, mode, view } = useSurface();
+  const keySeed = useRef(0);
+  const keysRef = useRef<number[]>([]);
   if (Surface === undefined || !isRecord(schema) || !isRecord(schema.items)) {
     return <Fallback id="" />;
   }
@@ -40,13 +43,35 @@ export function ArrayInput({ data }: SurfaceProps): ReactElement {
       : `Add ${noun}`;
   const atMin = list.length <= minItems;
   const atMax = maxItems !== undefined && list.length >= maxItems;
+  // Stable per-row identity: React keeps each row's local editing draft with
+  // its own data across add/remove. Index keys would slide a removed row's
+  // draft onto the next survivor and drop the survivor's own; an id that
+  // travels with the row keeps each draft attached to its data.
+  if (keysRef.current.length > list.length) {
+    keysRef.current = keysRef.current.slice(0, list.length);
+  } else {
+    while (keysRef.current.length < list.length) {
+      keysRef.current.push(keySeed.current++);
+    }
+  }
+  const keys = keysRef.current;
+  const removeAt = (index: number): void => {
+    if (dataApi === undefined) return;
+    keysRef.current = keysRef.current.filter((_, i) => i !== index);
+    dataApi.setData(list.filter((_, i) => i !== index));
+  };
+  const addItem = (): void => {
+    if (dataApi === undefined) return;
+    keysRef.current = [...keysRef.current, keySeed.current++];
+    dataApi.setData([...list, undefined]);
+  };
 
   return (
     <FieldSet className="min-w-0" data-invalid={fs.invalid ? true : undefined}>
       {fs.showLabels && fs.label.length > 0 ? (
         <FieldLegend variant="label">{fs.label}</FieldLegend>
       ) : null}
-      {fs.showLabels && fs.description.length > 0 ? (
+      {fs.description.length > 0 ? (
         <FieldDescription id={`${fs.controlId}-description`}>
           {fs.description}
         </FieldDescription>
@@ -54,7 +79,7 @@ export function ArrayInput({ data }: SurfaceProps): ReactElement {
       <FieldScope readOnly={fs.readOnly}>
         <FieldGroup>
           {list.map((item, index) => (
-            <div key={index} className="flex items-start gap-2">
+            <div key={keys[index]} className="flex items-start gap-2">
               <div className="flex-1">
                 <FieldScope omitLabel>
                   <Surface
@@ -63,42 +88,31 @@ export function ArrayInput({ data }: SurfaceProps): ReactElement {
                     data={item}
                     mode={mode}
                     view={view}
-                    entry={
-                      typeof items.$ref === "string"
-                        ? undefined
-                        : { label: `${noun} ${index + 1}` }
-                    }
                   />
                 </FieldScope>
               </div>
-              <Button
-                type="button"
+              <ItemActionButton
+                action="remove"
+                widget={entry?.widget}
+                fallbackLabel="Remove"
+                accessibleLabel={`Remove ${noun} ${index + 1}`}
                 variant="ghost"
-                size="sm"
                 disabled={fs.readOnly || atMin}
-                aria-label={`Remove ${noun} ${index + 1}`}
-                onClick={() => {
-                  dataApi?.setData(list.filter((_, i) => i !== index));
-                }}
-              >
-                Remove
-              </Button>
+                onClick={() => removeAt(index)}
+              />
             </div>
           ))}
         </FieldGroup>
       </FieldScope>
-      <Button
-        type="button"
+      <ItemActionButton
+        action="add"
+        widget={entry?.widget}
+        fallbackLabel={addLabel}
         variant="outline"
-        size="sm"
         className="self-start"
         disabled={fs.readOnly || atMax}
-        onClick={() => {
-          dataApi?.setData([...list, undefined]);
-        }}
-      >
-        {addLabel}
-      </Button>
+        onClick={addItem}
+      />
       {fs.issues.length > 0 ? (
         <FieldError
           id={`${fs.controlId}-errors`}
@@ -125,6 +139,11 @@ export function ArrayDisplay({ data }: SurfaceProps): ReactElement {
     <FieldSet className="min-w-0" data-invalid={fs.invalid ? true : undefined}>
       {fs.showLabels && fs.label.length > 0 ? (
         <FieldLegend variant="label">{fs.label}</FieldLegend>
+      ) : null}
+      {fs.description.length > 0 ? (
+        <FieldDescription id={`${fs.controlId}-description`}>
+          {fs.description}
+        </FieldDescription>
       ) : null}
       {list.length === 0 ? (
         <span className="text-sm text-muted-foreground">—</span>

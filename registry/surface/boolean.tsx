@@ -28,7 +28,7 @@ export function BooleanInput({ data }: SurfaceProps): ReactElement {
   const control = (
     <Checkbox
       id={fs.controlId}
-      aria-label={fs.showLabels ? undefined : fs.label}
+      aria-label={fs.showLabels && fs.label ? undefined : fs.label || "Value"}
       checked={data === true}
       disabled={fs.readOnly}
       aria-invalid={fs.invalid || undefined}
@@ -90,7 +90,7 @@ export function BooleanDisplay({ data }: SurfaceProps): ReactElement {
       checked={data === true}
       disabled
       aria-readonly
-      aria-label={fs.label}
+      aria-label={fs.label || "Value"}
     />
   );
 

@@ -5,23 +5,111 @@
   "items": [
     {
       "name": "surface",
-      "type": "registry:item",
+      "type": "registry:block",
       "title": "Surface shadcn kit",
       "description": "Schema-driven input and display using your application's local shadcn Base UI components.",
       "dependencies": [
         "@rusl-labs/surface-shadcn@0.1.0",
-        "@rusl-labs/surface@0.1.0"
+        "@rusl-labs/surface@0.1.0",
+        "@rusl-labs/surface-ajv@0.1.0",
+        "@uiw/react-codemirror",
+        "@uiw/codemirror-extensions-langs",
+        "@codemirror/view"
       ],
       "registryDependencies": [
         "field",
         "input",
+        "input-group",
         "textarea",
         "checkbox",
-        "native-select",
+        "select",
+        "combobox",
         "button",
-        "alert"
+        "alert",
+        "card",
+        "accordion",
+        "collapsible",
+        "table",
+        "calendar",
+        "popover",
+        "radio-group",
+        "toggle-group",
+        "switch",
+        "tooltip",
+        "carousel",
+        "separator"
       ],
       "files": [
+        {
+          "path": "registry/surface/actions.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/actions.tsx"
+        },
+        {
+          "path": "registry/surface/widget.ts",
+          "type": "registry:lib",
+          "target": "@components/surface/widget.ts"
+        },
+        {
+          "path": "registry/surface/choices.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/choices.tsx"
+        },
+        {
+          "path": "registry/surface/date.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/date.tsx"
+        },
+        {
+          "path": "registry/surface/collection.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/collection.tsx"
+        },
+        {
+          "path": "registry/surface/disclosure.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/disclosure.tsx"
+        },
+        {
+          "path": "registry/surface/media.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/media.tsx"
+        },
+        {
+          "path": "registry/surface/phone.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/phone.tsx"
+        },
+        {
+          "path": "registry/surface/money.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/money.tsx"
+        },
+        {
+          "path": "registry/surface/address.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/address.tsx"
+        },
+        {
+          "path": "registry/surface/switch.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/switch.tsx"
+        },
+        {
+          "path": "registry/surface/code.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/code.tsx"
+        },
+        {
+          "path": "registry/surface/index.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/index.tsx"
+        },
+        {
+          "path": "registry/surface/resolvers.ts",
+          "type": "registry:lib",
+          "target": "@components/surface/resolvers.ts"
+        },
         {
           "path": "registry/surface/composition.tsx",
           "type": "registry:component",

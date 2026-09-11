@@ -1,10 +1,15 @@
-import { StrictMode, useState } from "react";
+import { StrictMode, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createSurfaceUi,
   InMemoryAnnotationResolver,
+  candidateKeys,
+  useSurface,
+  type SurfaceRootProps,
+  type AnnotationDocument,
 } from "@rusl-labs/surface";
 import { createAjvValidator } from "@rusl-labs/surface-ajv";
+import { SurfaceProvider } from "@rusl-labs/surface-shadcn";
 import { createShadcnKit } from "../../registry/surface/kit";
 import {
   demoSelection,
@@ -14,18 +19,47 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardAction,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import contactAnnotation from "./contact.annotation.json";
+import { annotationContext, exampleAnnotations } from "./view-annotations";
+import { AnnotationEditor, ViewControls } from "./view-controls";
 import "./styles.css";
+const usAddressSample = {
+  $kind: "https://resources.rusl.com/resources/pragmatic/schemas/us-address",
+  street1: "1 Infinite Loop",
+  street2: "Cupertino HQ",
+  city: "Cupertino",
+  region: "CA",
+  postalCode: "95014",
+  countryCode: "US",
+};
+
+const productSample = {
+  name: "Laptop",
+  sku: "MBP-14",
+  status: "active",
+  description: "Portable workstation.",
+  images: [
+    {
+      url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=640&h=480&q=80",
+      alt: "Open laptop on a desk",
+    },
+    {
+      url: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=640&h=480&q=80",
+      alt: "Laptop from above",
+    },
+  ],
+};
 
 const initialData = {
   name: "Alex Morgan",
   email: "alex@example.com",
+  phone: "+14155550100",
+  budget: { amount: 3423, currency: "USD" },
   relationship: "Partner",
   updates: true,
   location: { city: "Melbourne", timezone: "Australia/Sydney" },
@@ -33,120 +67,180 @@ const initialData = {
   notes: "Working together on the next good thing.",
 };
 
-function SchemaEditor({ selection }: { selection: SchemaSelection }) {
-  const [{ Surface }] = useState(() =>
-    createSurfaceUi({
+function SchemaEditor({
+  selection,
+  annotation,
+  onAnnotationChange,
+}: {
+  selection: SchemaSelection;
+  annotation: AnnotationDocument;
+  onAnnotationChange: (annotation: AnnotationDocument) => void;
+}) {
+  const [inputView, setInputView] = useState("default");
+  const [displayView, setDisplayView] = useState("card");
+  const { Surface } = useMemo(() => {
+    const kit = createShadcnKit();
+    const KitRoot = kit.Root!;
+    function PlaygroundRoot(props: SurfaceRootProps) {
+      const surface = useSurface();
+      const mode = surface.mode ?? "input";
+      const view = surface.view ?? "default";
+      const schema = surface.schema!;
+      return (
+        <>
+          <ViewControls
+            context={annotationContext(
+              {
+                documentUri: surface.documentUri ?? selection.documentUri,
+                pointer: surface.coordinate?.subject.split("#")[1] ?? "",
+              },
+              surface.annotation,
+            )}
+            mappedViews={
+              kit.getViews?.({
+                keys: candidateKeys(schema, surface.entry, surface.coordinate),
+                schema,
+                mode,
+                view,
+                entry: surface.entry,
+                coordinate: surface.coordinate,
+                data: surface.data,
+              }) ?? []
+            }
+            mode={mode}
+            view={view}
+            onChange={mode === "input" ? setInputView : setDisplayView}
+          />
+          <KitRoot {...props} />
+        </>
+      );
+    }
+    return createSurfaceUi({
       schemaResolver: selection.resolver,
       annotationResolver: new InMemoryAnnotationResolver({
-        [contactAnnotation.subject]: contactAnnotation,
+        ...exampleAnnotations,
+        [selection.documentUri]: annotation,
       }),
       validator: createAjvValidator(),
-      kit: createShadcnKit(),
-    }),
-  );
+      kit: { ...kit, Root: PlaygroundRoot },
+    });
+  }, [selection, annotation]);
   const [initial] = useState(() => {
     if (selection.isDemo) return initialData;
     const examples = selection.schema.examples;
-    return Array.isArray(examples) && examples.length > 0
-      ? structuredClone(examples[0])
-      : structuredClone(selection.schema.default);
+    if (Array.isArray(examples) && examples.length > 0)
+      return structuredClone(examples[0]);
+    if (
+      selection.documentUri ===
+      "https://resources.rusl.com/resources/pragmatic/schemas/commerce.product"
+    ) {
+      return structuredClone(productSample);
+    }
+    if (
+      selection.documentUri ===
+      "https://resources.rusl.com/resources/pragmatic/schemas/us-address"
+    ) {
+      return structuredClone(usAddressSample);
+    }
+    return structuredClone(selection.schema.default);
   });
   const [draft, setDraft] = useState<unknown>(initial);
   const [saved, setSaved] = useState<unknown>(initial);
   const [saveCount, setSaveCount] = useState(0);
 
   return (
-    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Edit {selection.title}</CardTitle>
-          <CardDescription>
-            {selection.isDemo
-              ? "Fields and sections are selected by an annotation."
-              : "Schema defaults, rendered with your local components."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <Surface
-            id={selection.id}
-            data={draft}
-            onChange={setDraft}
-            onSubmit={({ data }) => {
-              setSaved(data);
-              setSaveCount((count) => count + 1);
-            }}
-          />
-        </CardContent>
-      </Card>
-      <div className="flex flex-col gap-6 lg:sticky lg:top-6">
+    <>
+      <AnnotationEditor annotation={annotation} onApply={onAnnotationChange} />
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <Card>
-          <CardHeader className="border-b">
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Live display</CardTitle>
-              <Badge variant="secondary">Same schema</Badge>
-            </div>
+          <CardHeader>
+            <CardTitle>Edit {selection.title}</CardTitle>
             <CardDescription>
-              Changes appear here before you save.
+              Choose a view defined by annotations or this schema's renderer
+              mapping.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-6">
-            <Surface id={selection.id} data={draft} mode="display" />
+          <CardContent>
+            <Surface
+              id={selection.id}
+              view={inputView}
+              data={draft}
+              onChange={setDraft}
+              onSubmit={({ data }) => {
+                setSaved(data);
+                setSaveCount((count) => count + 1);
+              }}
+            />
           </CardContent>
         </Card>
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-6">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-sm font-semibold">Saved record</h2>
-            <span role="status" className="text-xs text-muted-foreground">
-              {saveCount === 0
-                ? "No changes saved"
-                : `${saveCount} successful ${saveCount === 1 ? "save" : "saves"}`}
-            </span>
-          </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Only valid data reaches the submit callback. Reset returns to the
-            initial data for this schema.
-          </p>
-          <Separator />
-          <pre
-            aria-label="Saved JSON"
-            className="overflow-auto text-xs leading-relaxed"
-          >
-            {saved === undefined
-              ? "No data yet"
-              : JSON.stringify(saved, null, 2)}
-          </pre>
+        <div className="flex flex-col gap-6 lg:sticky lg:top-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Live display</CardTitle>
+              <CardAction>
+                <Badge variant="secondary">Same schema</Badge>
+              </CardAction>
+              <CardDescription>
+                Changes appear here before you save.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Surface
+                id={selection.id}
+                data={draft}
+                mode="display"
+                view={displayView}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Saved record</CardTitle>
+              <CardAction>
+                <span role="status" className="text-muted-foreground">
+                  {saveCount === 0
+                    ? "No changes saved"
+                    : `${saveCount} successful ${saveCount === 1 ? "save" : "saves"}`}
+                </span>
+              </CardAction>
+              <CardDescription>
+                Only valid data reaches the submit callback. Reset returns to
+                the initial data for this schema.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <pre aria-label="Saved JSON" className="overflow-auto">
+                {saved === undefined
+                  ? "No data yet"
+                  : JSON.stringify(saved, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
 function App() {
   const [selection, setSelection] = useState(demoSelection);
   const [revision, setRevision] = useState(0);
+  const [annotations, setAnnotations] = useState(exampleAnnotations);
   return (
     <div className="min-h-screen">
       <header className="border-b">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
-          <a href="/" className="font-semibold tracking-tight">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+          <a href="/" className="font-medium">
             surface<span className="text-muted-foreground"> / shadcn</span>
           </a>
-          <Badge variant="outline">Local components. Shared behavior.</Badge>
+          <a href="/how-it-works.html">How it works</a>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-12 md:py-16">
-        <div className="mb-10 flex flex-col gap-4 md:max-w-2xl">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            01 / Schema workspace
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-            One record.
-            <br />
-            Two ways to work.
-          </h1>
-          <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+      <main className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-8">
+        <div className="flex max-w-2xl flex-col gap-2">
+          <h1>Schema workspace</h1>
+          <p className="text-muted-foreground">
             Load a schema, edit its data, and read the same draft alongside it.
-            Your components own the presentation; Surface connects the rest.
           </p>
         </div>
         <SchemaSource
@@ -156,13 +250,23 @@ function App() {
             setRevision((value) => value + 1);
           }}
         />
-        <SchemaEditor key={revision} selection={selection} />
-        <footer className="mt-10 flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground md:flex-row md:justify-between">
-          <p>
-            The accent edge on every text input comes from this app's local
-            Input.
-          </p>
-          <p>React 19 · Tailwind 4 · Base UI / Nova</p>
+        <SchemaEditor
+          key={revision}
+          selection={selection}
+          annotation={
+            annotations[selection.documentUri] ?? {
+              subject: selection.documentUri,
+            }
+          }
+          onAnnotationChange={(annotation) =>
+            setAnnotations((current) => ({
+              ...current,
+              [selection.documentUri]: annotation,
+            }))
+          }
+        />
+        <footer className="border-t pt-6 text-muted-foreground">
+          React 19 · Tailwind 4 · Base UI / Vega
         </footer>
       </main>
     </div>
@@ -171,6 +275,8 @@ function App() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <SurfaceProvider locale="en-AU" defaultCountry="AU" defaultCurrency="AUD">
+      <App />
+    </SurfaceProvider>
   </StrictMode>,
 );

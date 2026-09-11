@@ -5,6 +5,7 @@ import {
   type ValidateResult,
 } from "@rusl-labs/surface";
 import { applyConstAndDefaults } from "./apply-const-defaults";
+import { useFormDrafts } from "./form-drafts";
 
 /** Root form-shell actions for the Save / Reset chrome. */
 export interface FormActions {
@@ -31,6 +32,9 @@ function errorMessage(cause: unknown): string {
 export function useFormActions(): FormActions {
   const surface = useSurface();
   const [pending, setPending] = useState(false);
+  const drafts = useFormDrafts();
+  const draftsRef = useRef(drafts);
+  draftsRef.current = drafts;
 
   // Save is async (a validator may compileAsync, onSubmit may be async), so it
   // reads the whole latest Surface context at call time from one ref.
@@ -56,6 +60,13 @@ export function useFormActions(): FormActions {
     } = surfaceRef.current;
 
     if (api === undefined) return false;
+    const draftsValid = (): boolean => {
+      const issues = draftsRef.current.validate();
+      if (issues.length === 0) return true;
+      api.reportValidation?.({ valid: false, issues });
+      return false;
+    };
+    if (!draftsValid()) return false;
     if (options?.validator === undefined) {
       api.reportValidation?.(
         failResult("Save failed: no validator configured"),
@@ -76,13 +87,20 @@ export function useFormActions(): FormActions {
       return false;
     }
 
+    // Snapshot the live value we prepare from. `api.data` is core's live getter
+    // (dataRef): if an external replacement or a sibling field's canonical edit
+    // lands during any async step below, it no longer equals this snapshot and
+    // we abort rather than clobber it or attach a stale outcome. Reset is
+    // covered separately by `generation`.
+    const snapshot = api.data;
+
     // Force const / fill defaults so validation never depends on mount-time
     // seeding; document scope lets relative refs resolve.
     let data: unknown;
     try {
       data = await applyConstAndDefaults(
         schema,
-        api.data,
+        snapshot,
         options.schemaResolver,
         {
           document,
@@ -90,7 +108,10 @@ export function useFormActions(): FormActions {
         },
       );
     } catch (cause) {
-      if (generationRef.current !== generation) return false;
+      // A stale prep error must not attach to reset or replaced data.
+      if (generationRef.current !== generation || api.data !== snapshot) {
+        return false;
+      }
       api.reportValidation?.(
         failResult(
           `Save failed applying const/default: ${errorMessage(cause)}`,
@@ -98,9 +119,15 @@ export function useFormActions(): FormActions {
       );
       return false;
     }
-    // A reset during preparation wins — do not clobber it with the prepared data.
-    if (generationRef.current !== generation) return false;
+    // A reset (generation) or an external / canonical replacement (identity)
+    // during preparation wins — do not clobber it with the prepared data.
+    if (generationRef.current !== generation || api.data !== snapshot) {
+      return false;
+    }
+    if (!draftsValid()) return false;
     api.setData(data);
+    // Our own write is the live value now; the async validate / submit steps
+    // below guard against it being replaced out from under them.
 
     let result: ValidateResult;
     try {
@@ -116,7 +143,8 @@ export function useFormActions(): FormActions {
       result = failResult(`Save failed: ${errorMessage(cause)}`);
     }
 
-    if (generationRef.current !== generation) return false;
+    if (generationRef.current !== generation || api.data !== data) return false;
+    if (!draftsValid()) return false;
     api.reportValidation?.(result);
     if (!result.valid) return false;
 
@@ -125,7 +153,10 @@ export function useFormActions(): FormActions {
       // Await so an async submit's rejection is caught, not left to escape.
       await Promise.resolve(onSubmit({ data }));
     } catch (cause) {
-      if (generationRef.current !== generation) return false;
+      // A late submit error must not attach to reset or replaced data.
+      if (generationRef.current !== generation || api.data !== data) {
+        return false;
+      }
       api.reportValidation?.(
         failResult(`Save failed in submit handler: ${errorMessage(cause)}`),
       );
@@ -148,6 +179,7 @@ export function useFormActions(): FormActions {
   const reset = useCallback((): void => {
     generationRef.current += 1;
     surfaceRef.current.dataApi?.reset?.();
+    draftsRef.current.reset();
   }, []);
 
   return { save, reset, pending };

@@ -4,9 +4,13 @@ import type { ReactElement } from "react";
 import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
 import { isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FieldChrome } from "./chrome";
 
 /** Human-readable label for an enum value of any JSON type. */
@@ -32,7 +36,7 @@ function valuesEqual(a: unknown, b: unknown): boolean {
 }
 
 /**
- * JSON Schema `enum` as a native select.
+ * JSON Schema `enum` as the host application's shadcn Select.
  *
  * Option values are the enum *index* encoded as a string, never the value's
  * text. On change we look the index back up and write the exact JSON value —
@@ -47,21 +51,17 @@ export function EnumInput({ data }: SurfaceProps): ReactElement {
   const selectedIndex = options.findIndex((option) =>
     valuesEqual(option, data),
   );
-  const value = selectedIndex >= 0 ? String(selectedIndex) : "";
+  const value = selectedIndex >= 0 ? String(selectedIndex) : "unset";
 
   return (
     <FieldChrome state={fs}>
-      <NativeSelect
-        id={fs.controlId}
-        aria-label={fs.showLabels ? undefined : fs.label}
+      <Select
         value={value}
         required={fs.required}
         disabled={fs.readOnly}
-        aria-invalid={fs.invalid || undefined}
-        aria-describedby={fs.describedBy}
-        onChange={(event) => {
-          const raw = event.currentTarget.value;
-          if (raw.length === 0) {
+        onValueChange={(raw) => {
+          if (raw === null) return;
+          if (raw === "unset") {
             dataApi?.setData(undefined);
             return;
           }
@@ -71,15 +71,34 @@ export function EnumInput({ data }: SurfaceProps): ReactElement {
           }
         }}
       >
-        <NativeSelectOption value="">
-          {fs.required ? "Select…" : ""}
-        </NativeSelectOption>
-        {options.map((option, index) => (
-          <NativeSelectOption key={index} value={String(index)}>
-            {optionText(option)}
-          </NativeSelectOption>
-        ))}
-      </NativeSelect>
+        <SelectTrigger
+          id={fs.controlId}
+          className="w-full"
+          aria-label={
+            fs.showLabels && fs.label ? undefined : fs.label || "Value"
+          }
+          aria-invalid={fs.invalid || undefined}
+          aria-describedby={fs.describedBy}
+        >
+          <SelectValue>
+            {selectedIndex >= 0
+              ? optionText(options[selectedIndex])
+              : "Select…"}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="unset">
+              {fs.required ? "Select…" : "None"}
+            </SelectItem>
+            {options.map((option, index) => (
+              <SelectItem key={index} value={String(index)}>
+                {optionText(option)}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
     </FieldChrome>
   );
 }

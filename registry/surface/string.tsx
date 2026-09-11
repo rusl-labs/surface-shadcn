@@ -5,6 +5,7 @@ import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
 import { isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
 import { Input } from "@/components/ui/input";
 import { FieldChrome } from "./chrome";
+import { widgetString } from "./widget";
 
 /**
  * HTML input `type` for a string schema. Only formats whose wire value passes
@@ -45,23 +46,46 @@ function stringConstraints(schema: unknown): {
   };
 }
 
+const INPUT_TYPES = new Set([
+  "text",
+  "password",
+  "email",
+  "search",
+  "tel",
+  "url",
+]);
+
 export function StringInput({ data }: SurfaceProps): ReactElement {
   const fs = useFieldState();
-  const { schema, dataApi } = useSurface();
+  const { schema, dataApi, entry } = useSurface();
   const constraints = stringConstraints(schema);
   const value = typeof data === "string" ? data : "";
+  const placeholder = widgetString(entry?.widget, "placeholder");
+  const widgetType = widgetString(entry?.widget, "type");
+  const type =
+    widgetType !== undefined && INPUT_TYPES.has(widgetType)
+      ? widgetType
+      : constraints.type;
+  const autoComplete = widgetString(entry?.widget, "autocomplete");
 
   return (
     <FieldChrome state={fs}>
       <Input
         {...constraints}
+        type={type}
         id={fs.controlId}
-        aria-label={fs.showLabels ? undefined : fs.label}
+        aria-label={
+          fs.showLabels && fs.label.length > 0
+            ? undefined
+            : fs.label || placeholder || "Value"
+        }
         value={value}
         required={fs.required}
         readOnly={fs.readOnly}
         aria-invalid={fs.invalid || undefined}
         aria-describedby={fs.describedBy}
+        {...(placeholder !== undefined ? { placeholder } : {})}
+        {...(autoComplete !== undefined ? { autoComplete } : {})}
         onChange={(event) => {
           dataApi?.setData(event.currentTarget.value);
         }}
@@ -75,7 +99,7 @@ export function StringDisplay({ data }: SurfaceProps): ReactElement {
   const value = typeof data === "string" ? data : "";
   return (
     <FieldChrome state={fs}>
-      <span className="text-sm">{value}</span>
+      <span>{value}</span>
     </FieldChrome>
   );
 }

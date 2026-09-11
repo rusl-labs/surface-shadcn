@@ -5,14 +5,20 @@ version = "0.1.0"
 integrity = "5a01c77a963dc9caf90cd5edc7fe6db818c7fa5d1398afac64dff0706567ac46"
 source = "https://resources.rusl.com"
 
+[dependencies."schema:pragmatic/schemas/currency-code"]
+version = "0.1.0"
+integrity = "d3d004e090fa33495f57529f8dbd32ff354faaa3833dea071e1c220b886302ed"
+source = "https://resources.rusl.com"
+
+[dependencies."schema:pragmatic/schemas/money"]
+version = "0.1.0"
+integrity = "0d7162750d232239e3889c071a2c36f1d8daf0ea612e02ea0c98e8063933e0f8"
+source = "https://resources.rusl.com"
+dependencies = ["schema:pragmatic/schemas/currency-code"]
+
 [dependencies."schema:rusl/schemas/surface.annotation"]
 version = "0.1.0"
 integrity = "5b7f30811872f9bf316858dfb1ad9a74510b48c0feed7589c1ac05a53e1eabd2"
-source = "https://resources.rusl.com"
-
-[dependencies."schema:rusl/schemas/surface.default-kit"]
-version = "0.1.0"
-integrity = "13d8ee49bd54238469d3506b437a54b9c9cf6da3a5d7faab01e8b0484424e760"
 source = "https://resources.rusl.com"
 
 [dependencies."schema:rusl/schemas/surface.shadcn"]

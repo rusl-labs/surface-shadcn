@@ -1,53 +1,69 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
-import { isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
+import { useDraftField, useFieldState } from "@rusl-labs/surface-shadcn";
 import { Input } from "@/components/ui/input";
 import { FieldChrome } from "./chrome";
 
 /**
- * `number` / `integer` widget. An empty control clears the value to
- * `undefined` (never `0`) so empty drafts are not silently coerced; text that
- * is not a finite number is kept verbatim so validation can flag it.
+ * Numeric drafts stay text until complete: native number inputs erase a draft
+ * such as `1e` to an empty value, which would let an optional field Save stale
+ * or missing data. Schema bounds and integer/multipleOf checks remain validator-owned.
  */
 export function NumberInput({ data }: SurfaceProps): ReactElement {
-  const fs = useFieldState();
-  const { schema, dataApi } = useSurface();
-  const s = isRecord(schema) ? schema : {};
-  const min = typeof s.minimum === "number" ? s.minimum : undefined;
-  const max = typeof s.maximum === "number" ? s.maximum : undefined;
-  const step =
-    typeof s.multipleOf === "number"
-      ? s.multipleOf
-      : s.type === "integer"
-        ? 1
-        : "any";
-  const value =
-    typeof data === "number" && Number.isFinite(data) ? String(data) : "";
+  const { dataApi } = useSurface();
+  const [text, setText] = useState(() =>
+    typeof data === "number" ? String(data) : "",
+  );
+  const [touched, setTouched] = useState(false);
+  const lastEmitted = useRef(data);
+  const complete =
+    text === "" ||
+    (/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(text) &&
+      Number.isFinite(Number(text)));
+  const { field: fs, resetVersion } = useDraftField(
+    complete ? undefined : "Enter a complete, finite number.",
+    touched,
+  );
+  const previousReset = useRef(resetVersion);
+  useEffect(() => {
+    if (
+      previousReset.current === resetVersion &&
+      Object.is(data, lastEmitted.current)
+    )
+      return;
+    previousReset.current = resetVersion;
+    lastEmitted.current = data;
+    setText(typeof data === "number" ? String(data) : "");
+    setTouched(false);
+  }, [data, resetVersion]);
 
   return (
     <FieldChrome state={fs}>
       <Input
-        type="number"
+        type="text"
+        inputMode="decimal"
         id={fs.controlId}
-        aria-label={fs.showLabels ? undefined : fs.label}
-        value={value}
+        aria-label={fs.showLabels && fs.label ? undefined : fs.label || "Value"}
+        value={text}
         required={fs.required}
         readOnly={fs.readOnly}
-        step={step}
-        {...(min !== undefined ? { min } : {})}
-        {...(max !== undefined ? { max } : {})}
         aria-invalid={fs.invalid || undefined}
         aria-describedby={fs.describedBy}
+        onBlur={() => setTouched(true)}
         onChange={(event) => {
           const raw = event.currentTarget.value;
-          if (raw.length === 0) {
-            dataApi?.setData(undefined);
-            return;
+          setText(raw);
+          if (
+            raw === "" ||
+            (/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw) &&
+              Number.isFinite(Number(raw)))
+          ) {
+            const next = raw === "" ? undefined : Number(raw);
+            lastEmitted.current = next;
+            dataApi?.setData(next);
           }
-          const parsed = Number(raw);
-          dataApi?.setData(Number.isFinite(parsed) ? parsed : raw);
         }}
       />
     </FieldChrome>

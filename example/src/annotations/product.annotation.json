@@ -1,0 +1,304 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://resources.rusl.com/resources/pragmatic/schemas/commerce.product",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        { "name": "name", "label": "Name" },
+        {
+          "name": "status",
+          "label": "Status",
+          "input": {
+            "widget": { "name": "switch", "on": "active", "off": "archived" }
+          }
+        },
+        { "name": "sku", "label": "SKU" },
+        {
+          "name": "description",
+          "label": "Description",
+          "input": {
+            "widget": {
+              "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea",
+              "name": "textarea",
+              "options": { "rows": 3 }
+            }
+          }
+        },
+        {
+          "name": "images",
+          "label": "Images",
+          "itemLabel": "image",
+          "addLabel": "Add image",
+          "widget": {
+            "name": "list",
+            "add": { "appearance": "icon", "icon": "plus" },
+            "remove": { "appearance": "tooltip", "icon": "trash" }
+          },
+          "display": { "widget": { "name": "carousel" } },
+          "items": {
+            "rest": "omit",
+            "fields": [
+              {
+                "name": "url",
+                "label": "URL",
+                "input": {
+                  "label": "",
+                  "widget": { "name": "input", "placeholder": "Image URL" }
+                }
+              },
+              {
+                "name": "alt",
+                "label": "Alt",
+                "input": {
+                  "label": "",
+                  "widget": { "name": "input", "placeholder": "Alt text" }
+                }
+              }
+            ],
+            "display": {
+              "view": "card",
+              "widget": {
+                "name": "media",
+                "src": { "path": "url" },
+                "alt": { "path": "alt" },
+                "width": 640,
+                "height": 480,
+                "fit": "cover"
+              }
+            }
+          }
+        },
+        {
+          "label": "",
+          "widget": {
+            "name": "collapsible",
+            "defaultOpen": false,
+            "options": { "label": "More fields" }
+          },
+          "fields": [
+            { "name": "gtin", "label": "GTIN" },
+            {
+              "name": "externalReferences",
+              "label": "External references",
+              "itemLabel": "reference",
+              "addLabel": "Link a system"
+            },
+            { "name": "metadata", "label": "Metadata" }
+          ]
+        }
+      ]
+    },
+    "compact": {
+      "label": "Compact",
+      "description": "8px module (Nova --spacing). Ratios 1∶2, 2∶3, 4∶3. Generating figures: identity = name as title, SKU as caption; card = 4∶3 photograph over the name; row = one horizontal scan line; detail = photograph, then name as title, status and SKU as caption, description as body.",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        { "name": "name", "label": "Name" },
+        { "name": "status", "label": "Status" },
+        { "name": "sku", "label": "SKU" }
+      ]
+    },
+    "detail": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "label": "",
+          "input": { "omit": true },
+          "fields": [
+            {
+              "label": "",
+              "fields": [
+                {
+                  "name": "images",
+                  "label": "Images",
+                  "itemLabel": "image",
+                  "display": {
+                    "label": "",
+                    "widget": { "name": "carousel" }
+                  },
+                  "items": {
+                    "display": {
+                      "view": "card",
+                      "widget": {
+                        "name": "media",
+                        "src": { "path": "url" },
+                        "alt": { "path": "alt" },
+                        "width": 640,
+                        "height": 480,
+                        "fit": "cover"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "name": "name",
+              "label": "Product name",
+              "display": { "label": "" }
+            },
+            {
+              "name": "status",
+              "label": "Status",
+              "display": { "label": "" }
+            },
+            {
+              "name": "sku",
+              "label": "SKU",
+              "display": { "label": "" }
+            },
+            {
+              "name": "description",
+              "label": "Description",
+              "display": { "label": "" }
+            }
+          ]
+        },
+        {
+          "label": "",
+          "display": { "omit": true },
+          "fields": [
+            { "name": "name", "label": "Name" },
+            { "name": "status", "label": "Status" },
+            { "name": "sku", "label": "SKU" },
+            {
+              "name": "description",
+              "label": "Description",
+              "input": {
+                "widget": {
+                  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea",
+                  "name": "textarea",
+                  "options": { "rows": 4 }
+                }
+              }
+            },
+            {
+              "name": "images",
+              "label": "Images",
+              "itemLabel": "image",
+              "addLabel": "Add image",
+              "widget": {
+                "name": "list",
+                "add": { "appearance": "icon", "icon": "plus" },
+                "remove": { "appearance": "tooltip", "icon": "trash" }
+              }
+            }
+          ]
+        },
+        {
+          "label": "",
+          "widget": {
+            "name": "collapsible",
+            "defaultOpen": false,
+            "options": { "label": "Integrations" }
+          },
+          "fields": [
+            { "name": "gtin", "label": "GTIN" },
+            {
+              "name": "externalReferences",
+              "label": "External references",
+              "itemLabel": "reference",
+              "addLabel": "Link a system"
+            },
+            { "name": "metadata", "label": "Metadata" }
+          ]
+        }
+      ]
+    },
+    "identity": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "name": "name",
+          "label": "Name",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "sku",
+          "label": "SKU",
+          "display": { "label": "", "description": "" }
+        }
+      ]
+    },
+    "row": {
+      "label": "",
+      "direction": "horizontal",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "name": "name",
+          "label": "Name",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "sku",
+          "label": "SKU",
+          "display": { "label": "", "description": "" }
+        }
+      ]
+    },
+    "card": {
+      "label": "",
+      "layout": "stack",
+      "rest": "omit",
+      "fields": [
+        { "name": "$kind", "omit": true },
+        {
+          "name": "images",
+          "label": "Images",
+          "itemLabel": "image",
+          "display": { "label": "", "description": "", "widget": { "name": "carousel" } },
+          "items": {
+            "display": {
+              "view": "card",
+              "widget": {
+                "name": "media",
+                "src": { "path": "url" },
+                "alt": { "path": "alt" },
+                "width": 640,
+                "height": 480,
+                "fit": "cover"
+              }
+            }
+          }
+        },
+        {
+          "name": "name",
+          "label": "Name",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "display": { "label": "", "description": "" }
+        },
+        {
+          "name": "sku",
+          "label": "SKU",
+          "display": { "label": "", "description": "" }
+        }
+      ]
+    }
+  }
+}

@@ -87,7 +87,7 @@ export function useFieldState(): FieldState {
   const invalid = issues.length > 0;
 
   const describedParts: string[] = [];
-  if (showLabels && description.length > 0) {
+  if (description.length > 0) {
     describedParts.push(`${controlId}-description`);
   }
   if (invalid) describedParts.push(`${controlId}-errors`);
