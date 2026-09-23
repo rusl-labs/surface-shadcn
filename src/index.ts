@@ -6,6 +6,16 @@
 export * from "./constants";
 export { isRecord } from "./is-record";
 export { resolveMediaImage, type ResolvedMediaImage } from "./media";
+export {
+  AVATAR_INITIALS_CAP,
+  AVATAR_SHAPES,
+  AVATAR_SIZES,
+  initialsFromTitle,
+  resolveAvatar,
+  type AvatarShape,
+  type AvatarSize,
+  type ResolvedAvatar,
+} from "./avatar";
 export { seedValue } from "./seed-value";
 export { FieldScope, type FieldScopeProps } from "./field-scope";
 export { useFieldState, type FieldState } from "./use-field-state";

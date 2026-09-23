@@ -26,6 +26,7 @@
         "combobox",
         "button",
         "alert",
+        "avatar",
         "card",
         "accordion",
         "collapsible",
@@ -74,6 +75,11 @@
           "path": "registry/surface/media.tsx",
           "type": "registry:component",
           "target": "@components/surface/media.tsx"
+        },
+        {
+          "path": "registry/surface/avatar.tsx",
+          "type": "registry:component",
+          "target": "@components/surface/avatar.tsx"
         },
         {
           "path": "registry/surface/phone.tsx",

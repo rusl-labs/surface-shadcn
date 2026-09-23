@@ -50,7 +50,7 @@ One schema: `schemas/rusl/surface.shadcn.schema.json`. Select with `widget: { na
 
 | Widget | Attachment | Primitive |
 |---|---|---|
-| textarea, tel, money, media | field / image record | existing |
+| textarea, tel, money, media, avatar | field / image record | existing. Avatar is display-only (`src` / `title` bindings, `size`, `shape`) |
 | date, datetime | field | Calendar + Popover |
 | combobox, radio-group, toggle-group | field (enum) | Combobox, RadioGroup, ToggleGroup |
 | table, list, carousel | array | Table, list rows, Carousel. `add` / `remove` appearance: `label` (default), `icon`, `both`, or `tooltip` (icon + tooltip). `addLabel` still supplies the add text. |

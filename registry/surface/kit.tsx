@@ -6,6 +6,7 @@ import {
 } from "@rusl-labs/surface";
 import {
   SHADCN_ACCORDION_ID,
+  SHADCN_AVATAR_ID,
   SHADCN_CAROUSEL_ID,
   SHADCN_CODE_ID,
   SHADCN_COLLAPSIBLE_ID,
@@ -40,6 +41,7 @@ import { PhoneDisplay, PhoneInput } from "./phone";
 import { MoneyDisplay, MoneyInput } from "./money";
 import { US_ADDRESS_ID, UsAddressDisplay, UsAddressInput } from "./address";
 import { MediaDisplay } from "./media";
+import { AvatarDisplay } from "./avatar";
 import {
   ComboboxDisplay,
   ComboboxInput,
@@ -117,6 +119,7 @@ export function createShadcnKit(options: ShadcnKitOptions = {}): RegistryKit {
     ...perMode("textarea", TextareaInput, TextareaDisplay),
     { key: "media", mode: "display", view: "default", component: MediaDisplay },
     { key: "media", mode: "display", view: "card", component: MediaDisplay },
+    { key: "avatar", mode: "display", component: AvatarDisplay },
     ...perMode("date", DateInput, DateDisplay),
     ...perMode("datetime", DateTimeInput, DateTimeDisplay),
     { key: "table", mode: "display", component: TableDisplay },
@@ -153,6 +156,7 @@ export function createShadcnKit(options: ShadcnKitOptions = {}): RegistryKit {
       [SHADCN_TEL_ID]: "tel",
       [SHADCN_MONEY_ID]: "money",
       [SHADCN_MEDIA_ID]: "media",
+      [SHADCN_AVATAR_ID]: "avatar",
       [SHADCN_DATE_ID]: "date",
       [SHADCN_DATETIME_ID]: "datetime",
       [SHADCN_TABLE_ID]: "table",

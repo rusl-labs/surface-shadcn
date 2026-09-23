@@ -47,7 +47,29 @@
       "minItems": 1,
       "maxItems": 4
     },
-    "notes": { "type": "string", "title": "Notes", "maxLength": 500 }
+    "notes": { "type": "string", "title": "Notes", "maxLength": 500 },
+    "photo": { "$ref": "#/$defs/avatarSubject", "title": "Photo" },
+    "monogram": { "$ref": "#/$defs/avatarSubject", "title": "Initials" },
+    "tile": { "$ref": "#/$defs/avatarSubject", "title": "Square" },
+    "soft": { "$ref": "#/$defs/avatarSubject", "title": "Rounded" },
+    "mark": { "$ref": "#/$defs/avatarSubject", "title": "No name" }
+  },
+  "$defs": {
+    "avatarSubject": {
+      "title": "Avatar subject",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "avatarUrl": { "type": "string", "title": "Avatar URL" },
+            "name": { "type": "string", "title": "Name" }
+          }
+        }
+      }
+    }
   },
   "additionalProperties": false
 }

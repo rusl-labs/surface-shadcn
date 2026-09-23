@@ -13,6 +13,7 @@ export const SHADCN_TEXTAREA_ID = `${SHADCN_KIT_ID}#/$defs/textarea`;
 export const SHADCN_TEL_ID = `${SHADCN_KIT_ID}#/$defs/tel`;
 export const SHADCN_MONEY_ID = `${SHADCN_KIT_ID}#/$defs/money`;
 export const SHADCN_MEDIA_ID = `${SHADCN_KIT_ID}#/$defs/media`;
+export const SHADCN_AVATAR_ID = `${SHADCN_KIT_ID}#/$defs/avatar`;
 export const SHADCN_DATE_ID = `${SHADCN_KIT_ID}#/$defs/date`;
 export const SHADCN_DATETIME_ID = `${SHADCN_KIT_ID}#/$defs/datetime`;
 export const SHADCN_TABLE_ID = `${SHADCN_KIT_ID}#/$defs/table`;
