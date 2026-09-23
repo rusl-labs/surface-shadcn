@@ -81,6 +81,73 @@
               "options": { "rows": 3 }
             }
           }
+        },
+        {
+          "label": "Avatars",
+          "direction": "horizontal",
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "photo",
+              "label": "Photo",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "sm",
+                "shape": "circle"
+              }
+            },
+            {
+              "name": "monogram",
+              "label": "Initials",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "md",
+                "shape": "circle"
+              }
+            },
+            {
+              "name": "tile",
+              "label": "Square",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "lg",
+                "shape": "square"
+              }
+            },
+            {
+              "name": "soft",
+              "label": "Rounded",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "xl",
+                "shape": "rounded"
+              }
+            },
+            {
+              "name": "mark",
+              "label": "No name",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "tiny",
+                "shape": "square"
+              }
+            }
+          ]
         }
       ]
     },
@@ -192,6 +259,17 @@
             }
           }
         },
+        {
+          "label": "Avatars",
+          "omit": true,
+          "fields": [
+            { "name": "photo" },
+            { "name": "monogram" },
+            { "name": "tile" },
+            { "name": "soft" },
+            { "name": "mark" }
+          ]
+        },
         { "rest": true }
       ]
     },
@@ -253,6 +331,73 @@
               "name": "updates",
               "label": "Receive project updates",
               "widget": { "name": "switch" }
+            }
+          ]
+        },
+        {
+          "label": "Avatars",
+          "direction": "horizontal",
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "photo",
+              "label": "Photo",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "sm",
+                "shape": "circle"
+              }
+            },
+            {
+              "name": "monogram",
+              "label": "Initials",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "md",
+                "shape": "circle"
+              }
+            },
+            {
+              "name": "tile",
+              "label": "Square",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "lg",
+                "shape": "square"
+              }
+            },
+            {
+              "name": "soft",
+              "label": "Rounded",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "xl",
+                "shape": "rounded"
+              }
+            },
+            {
+              "name": "mark",
+              "label": "No name",
+              "widget": {
+                "name": "avatar",
+                "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar",
+                "src": "profile.avatarUrl",
+                "title": "profile.name",
+                "size": "tiny",
+                "shape": "square"
+              }
             }
           ]
         }

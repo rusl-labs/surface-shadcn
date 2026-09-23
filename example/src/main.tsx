@@ -65,6 +65,29 @@ const initialData = {
   location: { city: "Melbourne", timezone: "Australia/Sydney" },
   tags: ["Design partner"],
   notes: "Working together on the next good thing.",
+  photo: {
+    profile: {
+      avatarUrl:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=160&h=160&q=80",
+      name: "Alex Morgan",
+    },
+  },
+  monogram: { profile: { name: "Sam Rivera" } },
+  tile: {
+    profile: {
+      avatarUrl:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&h=160&q=80",
+      name: "Jordan Lee",
+    },
+  },
+  soft: {
+    profile: {
+      avatarUrl:
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=160&h=160&q=80",
+      name: "Riley Chen",
+    },
+  },
+  mark: { profile: {} },
 };
 
 function SchemaEditor({

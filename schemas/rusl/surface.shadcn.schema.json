@@ -10,6 +10,7 @@
     { "$ref": "#/$defs/tel" },
     { "$ref": "#/$defs/money" },
     { "$ref": "#/$defs/media" },
+    { "$ref": "#/$defs/avatar" },
     { "$ref": "#/$defs/date" },
     { "$ref": "#/$defs/datetime" },
     { "$ref": "#/$defs/table" },
@@ -148,6 +149,49 @@
             "height": { "$ref": "#/$defs/image-dimension" },
             "fit": { "type": "string", "enum": ["cover", "contain"] },
             "maxHeight": { "$ref": "#/$defs/image-dimension" }
+          }
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "avatar": {
+      "title": "Avatar",
+      "description": "Display-only profile image using the consuming application's shadcn Avatar. `src` and `title` are bindings with the same resolution as media `src` (dotted path, {{template}}, or path/template/literal object). An omitted `src` reads a string value or `url`. `title` is the image alt and the initials fallback when `src` is empty or the image fails to load. Initials are the first letter of each word, uppercased, at most two characters. A neutral mark shows when `title` is absent. `size` is tiny, sm, md, lg, or xl (default md). `shape` is circle, rounded, or square (default circle). Top-level keys win over `options.*`.",
+      "type": "object",
+      "properties": {
+        "name": { "const": "avatar" },
+        "$kind": {
+          "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/avatar"
+        },
+        "src": { "$ref": "#/$defs/binding" },
+        "title": { "$ref": "#/$defs/binding" },
+        "size": {
+          "type": "string",
+          "enum": ["tiny", "sm", "md", "lg", "xl"],
+          "default": "md"
+        },
+        "shape": {
+          "type": "string",
+          "enum": ["circle", "rounded", "square"],
+          "default": "circle"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "src": { "$ref": "#/$defs/binding" },
+            "title": { "$ref": "#/$defs/binding" },
+            "size": {
+              "type": "string",
+              "enum": ["tiny", "sm", "md", "lg", "xl"],
+              "default": "md"
+            },
+            "shape": {
+              "type": "string",
+              "enum": ["circle", "rounded", "square"],
+              "default": "circle"
+            }
           }
         }
       },
