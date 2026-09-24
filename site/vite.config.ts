@@ -1,18 +1,22 @@
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 const siteRoot = fileURLToPath(new URL(".", import.meta.url));
-const require = createRequire(new URL("./package.json", import.meta.url));
+const siteEntry = fileURLToPath(new URL("./src/main.tsx", import.meta.url));
 
-/** Bare imports from the repo's kit and example resolve from this site's npm install. */
+/**
+ * Kit and example files live outside this package. Resolve their bare imports
+ * as if the homepage imported them, so Vite still prebundles CommonJS packages
+ * such as React instead of serving `require()` to the browser.
+ */
 function resolveFromSite(): Plugin {
   return {
     name: "resolve-from-site",
     enforce: "pre",
-    resolveId(source) {
+    async resolveId(source, importer, options) {
+      if (!importer || importer.startsWith(siteRoot)) return null;
       if (
         source.startsWith(".") ||
         source.startsWith("/") ||
@@ -23,11 +27,11 @@ function resolveFromSite(): Plugin {
       ) {
         return null;
       }
-      try {
-        return require.resolve(source, { paths: [siteRoot] });
-      } catch {
-        return null;
-      }
+      const resolved = await this.resolve(source, siteEntry, {
+        ...options,
+        skipSelf: true,
+      });
+      return resolved ?? null;
     },
   };
 }
