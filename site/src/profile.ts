@@ -21,7 +21,11 @@ export const profileSchema = {
 } as const;
 
 export const profileAnnotation: AnnotationDocument = {
+  $kind: "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
   subject: PROFILE_ID,
+  targetLibraries: [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn",
+  ],
   views: {
     default: {
       fields: [

@@ -6,9 +6,18 @@ import {
 } from "@rusl-labs/surface";
 import { createAjvValidator } from "@rusl-labs/surface-ajv";
 import { SurfaceProvider, shadcnSchemas } from "@rusl-labs/surface-shadcn";
-import { Check, Copy, FileCode, Terminal } from "lucide-react";
+import { ArrowUpRight, Check, Copy, FileCode, Terminal } from "lucide-react";
 import { createShadcnKit } from "../../registry/surface/kit";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileCard } from "./profile-card";
 import profileCardSource from "./profile-card.tsx?raw";
@@ -22,7 +31,32 @@ import {
 } from "./profile";
 
 const REPOSITORY = "https://github.com/rusl-labs/surface-shadcn";
+const SURFACE = "https://github.com/rusl-labs/surface";
+const ANNOTATION_REFERENCE = `${SURFACE}/blob/HEAD/docs/annotation.md`;
+const WIDGET_VOCABULARY = `${REPOSITORY}/blob/HEAD/schemas/rusl/surface.shadcn.schema.json`;
 const INSTALL_ARGS = "shadcn@latest add rusl-labs/surface-shadcn/surface";
+
+const widgets: readonly {
+  readonly names: readonly string[];
+  readonly on: string;
+  readonly renders: string;
+}[] = [
+  { names: ["input", "email"], on: "string", renders: "Input" },
+  { names: ["textarea"], on: "string", renders: "Textarea" },
+  { names: ["date", "datetime"], on: "string", renders: "Calendar, Popover" },
+  { names: ["tel"], on: "phone", renders: "Combobox, Input Group" },
+  { names: ["money"], on: "money", renders: "Combobox, Input Group" },
+  { names: ["combobox"], on: "enum", renders: "Combobox" },
+  { names: ["radio-group"], on: "enum", renders: "Radio Group" },
+  { names: ["toggle-group"], on: "enum", renders: "Toggle Group" },
+  { names: ["switch"], on: "boolean", renders: "Switch" },
+  { names: ["table"], on: "array", renders: "Table" },
+  { names: ["list", "carousel"], on: "array", renders: "List rows, Carousel" },
+  { names: ["accordion", "collapsible"], on: "object", renders: "Accordion, Collapsible" },
+  { names: ["code"], on: "object", renders: "CodeMirror" },
+  { names: ["media", "avatar"], on: "image", renders: "Card, Avatar" },
+  { names: ["tooltip", "separator"], on: "field, section", renders: "Tooltip, Separator" },
+];
 
 const managers = {
   pnpm: "pnpm dlx",
@@ -72,6 +106,21 @@ export function ProfileForm() {
 }`,
   },
   {
+    title: "schemas/profile.schema.json",
+    code: JSON.stringify(profileSchema, null, 2),
+  },
+  {
+    title: "schemas/profile.annotation.json",
+    code: JSON.stringify(profileAnnotation, null, 2),
+  },
+];
+
+const annotationFiles: readonly SourceFile[] = [
+  {
+    title: "schemas/profile.annotation.json",
+    code: JSON.stringify(profileAnnotation, null, 2),
+  },
+  {
     title: "components/surface/resolvers.ts",
     code: `import {
   InMemoryAnnotationResolver,
@@ -90,14 +139,6 @@ export const schemaResolver = new InMemorySchemaFetchResolver({
 export const annotationResolver = new InMemoryAnnotationResolver({
   [profileAnnotation.subject]: profileAnnotation,
 })`,
-  },
-  {
-    title: "schemas/profile.schema.json",
-    code: JSON.stringify(profileSchema, null, 2),
-  },
-  {
-    title: "schemas/profile.annotation.json",
-    code: JSON.stringify(profileAnnotation, null, 2),
   },
 ];
 
@@ -256,6 +297,9 @@ function SiteHeader() {
           <a href="#usage" className="hover:text-foreground">
             Usage
           </a>
+          <a href="#annotations" className="hover:text-foreground">
+            Annotations
+          </a>
           <a href="#views" className="hover:text-foreground">
             Views
           </a>
@@ -283,45 +327,131 @@ function SectionHeading({ id, children }: { id: string; children: ReactNode }) {
   );
 }
 
+function InlineCode({ children }: { children: ReactNode }) {
+  return (
+    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.8125rem] text-foreground">
+      {children}
+    </code>
+  );
+}
+
+function TextLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      className="font-medium text-foreground underline underline-offset-4"
+    >
+      {children}
+    </a>
+  );
+}
+
+function ExternalBadge({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Badge variant="secondary" render={<a href={href} />}>
+      {children}
+      <ArrowUpRight data-icon="inline-end" />
+    </Badge>
+  );
+}
+
+function Caption({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      {children}
+    </p>
+  );
+}
+
+function WidgetTable() {
+  return (
+    <div className="overflow-hidden rounded-xl border">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="px-4">Widget</TableHead>
+            <TableHead className="px-4">Use on</TableHead>
+            <TableHead className="px-4">Renders</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {widgets.map((widget) => (
+            <TableRow key={widget.names.join()}>
+              <TableCell className="px-4">
+                <span className="flex flex-wrap gap-1.5">
+                  {widget.names.map((name) => (
+                    <InlineCode key={name}>{name}</InlineCode>
+                  ))}
+                </span>
+              </TableCell>
+              <TableCell className="px-4 text-muted-foreground">
+                {widget.on}
+              </TableCell>
+              <TableCell className="px-4">{widget.renders}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 function Homepage() {
   const [profile, setProfile] = useState<Profile>(initialProfile);
-  const { Surface } = useMemo(
-    () =>
-      createSurfaceUi({
-        schemaResolver: new InMemorySchemaFetchResolver({
-          ...shadcnSchemas,
-          [PROFILE_ID]: profileSchema,
-        }),
+  const { Surface, SchemaOnly } = useMemo(() => {
+    const schemaResolver = new InMemorySchemaFetchResolver({
+      ...shadcnSchemas,
+      [PROFILE_ID]: profileSchema,
+    });
+    const kit = createShadcnKit({
+      resolvers: [
+        {
+          key: PROFILE_ID,
+          mode: "display",
+          view: "card",
+          component: ProfileCard,
+        },
+      ],
+    });
+    return {
+      Surface: createSurfaceUi({
+        schemaResolver,
         annotationResolver: new InMemoryAnnotationResolver({
           [PROFILE_ID]: profileAnnotation,
         }),
         validator: createAjvValidator(),
-        kit: createShadcnKit({
-          resolvers: [
-            {
-              key: PROFILE_ID,
-              mode: "display",
-              view: "card",
-              component: ProfileCard,
-            },
-          ],
-        }),
-      }),
-    [],
-  );
+        kit,
+      }).Surface,
+      SchemaOnly: createSurfaceUi({
+        schemaResolver,
+        validator: createAjvValidator(),
+        kit,
+      }).Surface,
+    };
+  }, []);
+  const onChange = (data: unknown) => {
+    if (isProfile(data)) setProfile(data);
+  };
 
   return (
     <div className="min-h-svh">
       <SiteHeader />
       <main className="mx-auto flex max-w-4xl flex-col gap-12 px-6 pt-10 pb-24">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">
             surface-shadcn
           </h1>
           <p className="text-muted-foreground">
-            Forms and displays for JSON Schema, built from your shadcn
-            components.
+            The shadcn/ui kit for{" "}
+            <TextLink href={SURFACE}>Surface</TextLink>. It renders a JSON
+            Schema as a form and a display with your own components.
           </p>
+          <div className="flex flex-wrap gap-2">
+            <ExternalBadge href={SURFACE}>Surface</ExternalBadge>
+            <ExternalBadge href={ANNOTATION_REFERENCE}>
+              Annotation reference
+            </ExternalBadge>
+          </div>
         </div>
 
         <ComponentPreview files={profileFiles}>
@@ -329,12 +459,8 @@ function Homepage() {
             <Surface
               id={PROFILE_ID}
               data={profile}
-              onChange={(data) => {
-                if (isProfile(data)) setProfile(data);
-              }}
-              onSubmit={({ data }) => {
-                if (isProfile(data)) setProfile(data);
-              }}
+              onChange={onChange}
+              onSubmit={({ data }) => onChange(data)}
             />
             <Surface id={PROFILE_ID} data={profile} mode="display" />
           </div>
@@ -343,21 +469,71 @@ function Homepage() {
         <section className="flex flex-col gap-4">
           <SectionHeading id="installation">Installation</SectionHeading>
           <CommandBlock args={INSTALL_ARGS} />
+          <p className="text-muted-foreground">
+            This adds the renderers to <InlineCode>components/surface</InlineCode>{" "}
+            and installs <InlineCode>@rusl-labs/surface</InlineCode>, the
+            AJV validator, and the shadcn components they use.
+          </p>
         </section>
 
         <section className="flex flex-col gap-4">
           <SectionHeading id="usage">Usage</SectionHeading>
+          <p className="text-muted-foreground">
+            <InlineCode>id</InlineCode> is the schema{" "}
+            <InlineCode>$id</InlineCode>. Schemas that are not registered
+            locally are fetched from that URL.
+          </p>
           <CodeBlock title="app/page.tsx" code={usageCode} />
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <SectionHeading id="annotations">Annotations</SectionHeading>
+          <p className="text-muted-foreground">
+            An annotation is a JSON document for one schema. It sets labels,
+            field order, sections, and widgets for each view. The schema
+            stays the data contract. See the{" "}
+            <TextLink href={ANNOTATION_REFERENCE}>annotation reference</TextLink>
+            .
+          </p>
+          <ComponentPreview files={annotationFiles}>
+            <div className="grid items-start gap-10 md:grid-cols-2">
+              <div className="flex flex-col gap-6">
+                <Caption>Schema only</Caption>
+                <SchemaOnly
+                  id={PROFILE_ID}
+                  data={profile}
+                  onChange={onChange}
+                  onSubmit={({ data }) => onChange(data)}
+                />
+              </div>
+              <div className="flex flex-col gap-6">
+                <Caption>With annotation</Caption>
+                <Surface
+                  id={PROFILE_ID}
+                  data={profile}
+                  onChange={onChange}
+                  onSubmit={({ data }) => onChange(data)}
+                />
+              </div>
+            </div>
+          </ComponentPreview>
+          <h3 className="mt-4 text-lg font-semibold tracking-tight">Widgets</h3>
+          <p className="text-muted-foreground">
+            Set <InlineCode>widget.name</InlineCode> on a field. The names come
+            from the kit's{" "}
+            <TextLink href={WIDGET_VOCABULARY}>widget vocabulary</TextLink>.
+          </p>
+          <WidgetTable />
         </section>
 
         <section className="flex flex-col gap-4">
           <SectionHeading id="views">Views</SectionHeading>
           <p className="text-muted-foreground">
-            Register a renderer for a schema, mode, and view in{" "}
-            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
-              components/surface/index.tsx
-            </code>
-            .
+            A view is a named presentation, such as{" "}
+            <InlineCode>default</InlineCode> or <InlineCode>card</InlineCode>.
+            An annotation sets a view's fields. A registered component can take
+            over a view for a schema and mode. Register it in{" "}
+            <InlineCode>components/surface/index.tsx</InlineCode>.
           </p>
           <ComponentPreview files={cardFiles}>
             <div className="flex justify-center">
