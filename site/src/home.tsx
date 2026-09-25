@@ -8,67 +8,67 @@ import { createAjvValidator } from "@rusl-labs/surface-ajv";
 import { SurfaceProvider } from "@rusl-labs/surface-shadcn";
 import { createShadcnKit } from "../../registry/surface/kit";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BallotChoice } from "./ballot";
-import { VOTE_ID, initialVote, voteAnnotation, voteSchema } from "./vote";
+import { Separator } from "@/components/ui/separator";
+import { ProfileCard } from "./profile-card";
+import {
+  PROFILE_ID,
+  initialProfile,
+  profileAnnotation,
+  profileSchema,
+} from "./profile";
 
 const installCommand =
   "npx shadcn@latest add rusl-labs/surface-shadcn/surface";
 
-const usage = `import { Surface } from "@/components/surface";
+const usage = `import { Surface } from "@/components/surface"
 
 <Surface
   id={schemaId}
-  data={vote}
-  onChange={setVote}
-  onSubmit={({ data }) => save(data)}
+  data={profile}
+  onChange={setProfile}
 />`;
 
 const registration = `createShadcnKit({
   resolvers: [{
-    key: "enum",
+    key: "object",
     mode: "display",
-    view: "ballot",
-    component: BallotChoice,
+    view: "card",
+    component: ProfileCard,
   }],
-});`;
+})`;
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="overflow-x-auto rounded-xl bg-foreground px-4 py-4 text-sm leading-relaxed text-background">
+    <pre className="overflow-x-auto rounded-lg bg-muted px-4 py-3 font-mono text-sm leading-relaxed">
       <code>{children}</code>
     </pre>
   );
 }
 
 function Homepage() {
-  const [vote, setVote] = useState(initialVote);
-  const [displayView, setDisplayView] = useState<"default" | "ballot">(
-    "ballot",
-  );
+  const [profile, setProfile] = useState(initialProfile);
   const { Surface } = useMemo(() => {
     return createSurfaceUi({
       schemaResolver: new InMemorySchemaFetchResolver({
-        [VOTE_ID]: voteSchema,
+        [PROFILE_ID]: profileSchema,
       }),
       annotationResolver: new InMemoryAnnotationResolver({
-        [VOTE_ID]: voteAnnotation,
+        [PROFILE_ID]: profileAnnotation,
       }),
       validator: createAjvValidator(),
       kit: createShadcnKit({
         resolvers: [
           {
-            key: "enum",
+            key: "object",
             mode: "display",
-            view: "ballot",
-            component: BallotChoice,
+            view: "card",
+            component: ProfileCard,
           },
         ],
       }),
@@ -76,178 +76,79 @@ function Homepage() {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-          <a href="#top" className="font-heading text-sm font-semibold">
-            surface
-            <span className="font-normal text-muted-foreground"> / shadcn</span>
+        <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-6">
+          <a href="/" className="text-sm font-medium">
+            surface-shadcn
           </a>
-          <nav className="flex items-center gap-5 text-sm">
-            <a href="#show">Show</a>
-            <a href="#install">Install</a>
-            <a href="#views">Your view</a>
-          </nav>
+          <Badge variant="secondary">shadcn</Badge>
         </div>
       </header>
 
-      <main id="top" className="mx-auto flex max-w-6xl flex-col gap-24 px-6 py-16">
-        <section id="show" className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          <div className="flex flex-col gap-6 lg:pt-4">
-            <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-              Surface for shadcn
-            </p>
-            <h1 className="max-w-xl text-5xl leading-[1.05] font-semibold tracking-tight">
-              Your schema, rendered with your components.
-            </h1>
-            <p className="max-w-md text-lg text-muted-foreground">
-              One block install. One import. A JSON Schema becomes an editable
-              form and a readable view, built from the Input, Field, and Select
-              already in your app.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              This page imports{" "}
-              <span className="text-foreground">@rusl-labs/surface@0.1.1</span>{" "}
-              and{" "}
-              <span className="text-foreground">@rusl-labs/surface-ajv@0.1.0</span>{" "}
-              from npm. The renderers are the kit source in this repo.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                nativeButton={false}
-                render={<a href="#install" />}
-                size="lg"
-              >
-                Install
-              </Button>
-              <Button
-                nativeButton={false}
-                render={<a href="#views" />}
-                variant="outline"
-                size="lg"
-              >
-                Register a view
-              </Button>
-            </div>
-          </div>
+      <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-8">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          surface-shadcn
+        </h1>
 
+        <div className="grid items-start gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>A vote, from a schema</CardTitle>
-              <CardDescription>
-                Choice and note. Save keeps the record on this page.
-              </CardDescription>
+              <CardTitle>Edit</CardTitle>
             </CardHeader>
             <CardContent>
               <Surface
-                id={VOTE_ID}
-                data={vote}
+                id={PROFILE_ID}
+                data={profile}
                 onChange={(data) => {
-                  if (isVote(data)) setVote(data);
+                  if (isProfile(data)) setProfile(data);
                 }}
                 onSubmit={({ data }) => {
-                  if (isVote(data)) setVote(data);
+                  if (isProfile(data)) setProfile(data);
                 }}
               />
             </CardContent>
           </Card>
-        </section>
-
-        <section id="install" className="flex flex-col gap-6">
-          <div className="flex max-w-2xl flex-col gap-3">
-            <h2>Install it into your application</h2>
-            <p className="text-muted-foreground">
-              The shadcn CLI copies the renderers into your project and installs
-              the npm packages they import. Your theme and your local primitives
-              stay yours.
-            </p>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium">From this repository</p>
-              <Code>{installCommand}</Code>
-              <p className="text-sm text-muted-foreground">
-                Works against the public GitHub repo today. The hosted registry
-                file will be{" "}
-                <span className="text-foreground">
-                  https://ui.rusl.com/r/surface.json
-                </span>{" "}
-                once that static site is up.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium">Then render a schema</p>
-              <Code>{usage}</Code>
-              <p className="text-sm text-muted-foreground">
-                <span className="text-foreground">@rusl-labs/surface-shadcn</span>{" "}
-                is the headless helper package. It is not on npm yet, so a
-                public install still needs that publish.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section id="views" className="grid items-start gap-10 lg:grid-cols-2">
-          <div className="flex flex-col gap-5">
-            <h2>Register your own view</h2>
-            <p className="text-muted-foreground">
-              Pass extra resolvers to <code>createShadcnKit</code>. They are
-              appended last, so this one wins for an enum in display mode when
-              the view is <code>ballot</code>. Every other field keeps the
-              default renderer.
-            </p>
-            <Code>{registration}</Code>
-          </div>
           <Card>
             <CardHeader>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <CardTitle>Same vote, two presentations</CardTitle>
-                <Badge variant="secondary">{displayView}</Badge>
-              </div>
-              <CardDescription>
-                Edit the form above. This display follows it.
-              </CardDescription>
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant={displayView === "default" ? "default" : "outline"}
-                  onClick={() => setDisplayView("default")}
-                >
-                  Default
-                </Button>
-                <Button
-                  variant={displayView === "ballot" ? "default" : "outline"}
-                  onClick={() => setDisplayView("ballot")}
-                >
-                  Ballot
-                </Button>
-              </div>
+              <CardTitle>Display</CardTitle>
             </CardHeader>
             <CardContent>
-              <Surface
-                id={VOTE_ID}
-                data={vote}
-                mode="display"
-                view={displayView}
-              />
+              <Surface id={PROFILE_ID} data={profile} mode="display" />
             </CardContent>
           </Card>
+        </div>
+
+        <Separator />
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold tracking-tight">Installation</h2>
+          <Code>{installCommand}</Code>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold tracking-tight">Usage</h2>
+          <Code>{usage}</Code>
+        </section>
+
+        <Separator />
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold tracking-tight">Card</h2>
+          <div className="flex justify-center rounded-xl border bg-muted/40 p-10">
+            <Surface id={PROFILE_ID} data={profile} mode="display" view="card" />
+          </div>
+          <Code>{registration}</Code>
         </section>
       </main>
-
-      <footer className="border-t">
-        <p className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground">
-          React 19 · Tailwind 4 · shadcn Base UI. The playground in{" "}
-          <code>example/</code> is the full schema workspace.
-        </p>
-      </footer>
     </div>
   );
 }
 
-function isVote(data: unknown): data is typeof initialVote {
+function isProfile(data: unknown): data is typeof initialProfile {
   if (typeof data !== "object" || data === null) return false;
   const record = data as Record<string, unknown>;
-  return typeof record.choice === "string";
+  return typeof record.name === "string" && typeof record.email === "string";
 }
 
 export function App() {
