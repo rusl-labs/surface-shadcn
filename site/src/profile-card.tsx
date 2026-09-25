@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import type { SurfaceProps } from "@rusl-labs/surface";
 import { parsePhoneValue } from "@rusl-labs/surface-shadcn";
 import { Mail, Phone } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -33,6 +33,9 @@ export function ProfileCard({ data }: SurfaceProps): ReactElement | null {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Avatar size="lg">
+            {data.photo?.url ? (
+              <AvatarImage src={data.photo.url} alt={data.photo.alt ?? ""} />
+            ) : null}
             <AvatarFallback>{initials(data.name)}</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
