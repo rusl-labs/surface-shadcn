@@ -1,6 +1,5 @@
-import type { ReactElement } from "react";
 import type { SurfaceProps } from "@rusl-labs/surface";
-import { parsePhoneValue } from "@rusl-labs/surface-shadcn";
+import { isRecord, parsePhoneValue } from "@rusl-labs/surface-shadcn";
 import { Mail, Phone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { isProfile } from "./profile";
+
+function text(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
 
 function initials(name: string): string {
   return name
@@ -23,9 +25,12 @@ function initials(name: string): string {
     .join("");
 }
 
-/** Display renderer registered for the profile schema's `card` view. */
-export function ProfileCard({ data }: SurfaceProps): ReactElement | null {
-  if (!isProfile(data)) return null;
+/** Replaces the annotation's `card` view in display mode. */
+export function ProfileCard({ data }: SurfaceProps) {
+  if (!isRecord(data)) return null;
+  const name = text(data.name);
+  const email = text(data.email);
+  const photo = isRecord(data.photo) ? data.photo : {};
   const phone = parsePhoneValue(data.phone);
 
   return (
@@ -33,17 +38,17 @@ export function ProfileCard({ data }: SurfaceProps): ReactElement | null {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Avatar size="lg">
-            {data.photo?.url ? (
-              <AvatarImage src={data.photo.url} alt={data.photo.alt ?? ""} />
+            {text(photo.url) ? (
+              <AvatarImage src={text(photo.url)} alt={text(photo.alt)} />
             ) : null}
-            <AvatarFallback>{initials(data.name)}</AvatarFallback>
+            <AvatarFallback>{initials(name)}</AvatarFallback>
           </Avatar>
           <div className="grid gap-1">
-            <CardTitle>{data.name}</CardTitle>
-            <CardDescription>{data.role}</CardDescription>
+            <CardTitle>{name}</CardTitle>
+            <CardDescription>{text(data.role)}</CardDescription>
           </div>
         </div>
-        {data.available ? (
+        {data.available === true ? (
           <CardAction>
             <Badge variant="secondary">Available</Badge>
           </CardAction>
@@ -52,10 +57,10 @@ export function ProfileCard({ data }: SurfaceProps): ReactElement | null {
       <CardContent className="flex flex-col gap-2">
         <a
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-          href={`mailto:${data.email}`}
+          href={`mailto:${email}`}
         >
           <Mail className="size-4" />
-          {data.email}
+          {email}
         </a>
         {phone ? (
           <a

@@ -1,14 +1,6 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import {
-  InMemoryAnnotationResolver,
-  InMemorySchemaFetchResolver,
-  createSurfaceUi,
-  type SurfaceComponent,
-} from "@rusl-labs/surface";
-import { createAjvValidator } from "@rusl-labs/surface-ajv";
-import { SurfaceProvider, shadcnSchemas } from "@rusl-labs/surface-shadcn";
+import { useEffect, useState, type ReactNode } from "react";
+import { SurfaceProvider } from "@rusl-labs/surface-shadcn";
 import { ArrowUpRight, Check, Copy, FileCode, Terminal } from "lucide-react";
-import { createShadcnKit } from "../../registry/surface/kit";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,37 +12,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProfileCard } from "./profile-card";
-import profileCardSource from "./profile-card.tsx?raw";
-import {
-  PROFILE_ID,
-  initialProfile,
-  isProfile,
-  profileAnnotation,
-  profileSchema,
-  type Profile,
-} from "./profile";
+import resolversSource from "../../registry/surface/resolvers.ts?raw";
+import { CardViews } from "./examples/card-views";
+import cardViewsSource from "./examples/card-views.tsx?raw";
+import profileCardSource from "./examples/profile-card.tsx?raw";
+import { ProfileViews } from "./examples/profile-views";
+import profileViewsSource from "./examples/profile-views.tsx?raw";
+import annotationSource from "./examples/profile.annotation.json?raw";
+import sampleSource from "./examples/profile.sample.json?raw";
+import schemaSource from "./examples/profile.schema.json?raw";
 
 const REPOSITORY = "https://github.com/rusl-labs/surface-shadcn";
 const SURFACE = "https://github.com/rusl-labs/surface";
 const ANNOTATION_REFERENCE = `${SURFACE}/blob/HEAD/docs/annotation.md`;
 const WIDGET_VOCABULARY = `${REPOSITORY}/blob/HEAD/schemas/rusl/surface.shadcn.schema.json`;
 const INSTALL_ARGS = "shadcn@latest add rusl-labs/surface-shadcn/surface";
-
-type Mode = "input" | "display";
-
-const viewGroups: readonly {
-  readonly mode: Mode;
-  readonly title: string;
-  readonly views: readonly string[];
-}[] = [
-  { mode: "input", title: "Input", views: ["default", "compact", "details"] },
-  {
-    mode: "display",
-    title: "Display",
-    views: ["identity", "row", "card", "details"],
-  },
-];
+const EXAMPLES = "site/src/examples";
 
 const managers = {
   pnpm: "pnpm dlx",
@@ -66,11 +43,33 @@ interface SourceFile {
   readonly code: string;
 }
 
+const annotationFile: SourceFile = {
+  title: `${EXAMPLES}/profile.annotation.json`,
+  code: annotationSource,
+};
+
+const profileFiles: readonly SourceFile[] = [
+  { title: `${EXAMPLES}/profile-views.tsx`, code: profileViewsSource },
+  { title: `${EXAMPLES}/profile.schema.json`, code: schemaSource },
+  { title: `${EXAMPLES}/profile.sample.json`, code: sampleSource },
+];
+
+const cardFiles: readonly SourceFile[] = [
+  { title: `${EXAMPLES}/card-views.tsx`, code: cardViewsSource },
+  { title: `${EXAMPLES}/profile-card.tsx`, code: profileCardSource },
+];
+
+const usageCode = `import { Surface } from "@/components/surface"
+
+<Surface id={schemaId} mode="input" view="default" onSubmit={({ data }) => console.log(data)} />
+
+<Surface id={schemaId} mode="display" view="card" data={record} />`;
+
 const annotationKeys: readonly { readonly key: string; readonly does: string }[] = [
   { key: "views", does: "Named presentations. Other views inherit field settings from default." },
   { key: "fields", does: "The fields to show, in order. An entry with fields and no name is a section." },
   { key: "label, description", does: "Text for a field or section. An empty label hides it." },
-  { key: "widget", does: "The renderer for a field or section." },
+  { key: "widget", does: "The renderer for a field or section. null clears an inherited widget." },
   { key: "input, display", does: "Settings that apply in one mode only." },
   { key: "layout", does: "props puts the label beside the value; stack puts it above." },
   { key: "direction", does: "vertical or horizontal." },
@@ -98,104 +97,6 @@ const widgets: readonly {
   { names: ["code"], on: "object", renders: "CodeMirror" },
   { names: ["media", "avatar"], on: "image", renders: "Card, Avatar" },
   { names: ["tooltip", "separator"], on: "field, section", renders: "Tooltip, Separator" },
-];
-
-const usageCode = `import { Surface } from "@/components/surface"
-
-<Surface id={schema} onSubmit={({ data }) => console.log(data)} />
-
-<Surface id={schema} data={profile} mode="display" view="card" />`;
-
-const profileFiles: readonly SourceFile[] = [
-  {
-    title: "components/profile.tsx",
-    code: `"use client"
-
-import * as React from "react"
-
-import { Surface } from "@/components/surface"
-
-const schema = "${PROFILE_ID}"
-
-export function Profile() {
-  const [profile, setProfile] = React.useState<unknown>()
-
-  return (
-    <>
-      <Surface id={schema} data={profile} onChange={setProfile} view="compact" />
-      <Surface id={schema} data={profile} mode="display" view="identity" />
-      <Surface id={schema} data={profile} mode="display" view="row" />
-      <Surface id={schema} data={profile} mode="display" view="card" />
-    </>
-  )
-}`,
-  },
-  {
-    title: "schemas/profile.schema.json",
-    code: JSON.stringify(profileSchema, null, 2),
-  },
-  {
-    title: "schemas/profile.annotation.json",
-    code: JSON.stringify(profileAnnotation, null, 2),
-  },
-];
-
-const resolversCode = `import {
-  InMemoryAnnotationResolver,
-  InMemorySchemaFetchResolver,
-} from "@rusl-labs/surface"
-import { shadcnSchemas } from "@rusl-labs/surface-shadcn"
-
-import profileAnnotation from "@/schemas/profile.annotation.json"
-import profileSchema from "@/schemas/profile.schema.json"
-
-export const schemaResolver = new InMemorySchemaFetchResolver({
-  ...shadcnSchemas,
-  [profileSchema.$id]: profileSchema,
-})
-
-export const annotationResolver = new InMemoryAnnotationResolver({
-  [profileAnnotation.subject]: profileAnnotation,
-})`;
-
-const cardFiles: readonly SourceFile[] = [
-  {
-    title: "components/surface/index.tsx",
-    code: `"use client"
-
-import { createSurfaceUi } from "@rusl-labs/surface"
-import { createAjvValidator } from "@rusl-labs/surface-ajv"
-
-import { ProfileCard } from "@/components/profile-card"
-import { createShadcnKit } from "./kit"
-import { annotationResolver, schemaResolver } from "./resolvers"
-
-export { SurfaceProvider } from "@rusl-labs/surface-shadcn"
-
-export const { Surface } = createSurfaceUi({
-  schemaResolver,
-  annotationResolver,
-  validator: createAjvValidator(),
-  kit: createShadcnKit({
-    resolvers: [
-      {
-        key: "${PROFILE_ID}",
-        mode: "display",
-        view: "card",
-        component: ProfileCard,
-      },
-    ],
-  }),
-})`,
-  },
-  {
-    title: "components/profile-card.tsx",
-    code: profileCardSource.trimEnd(),
-  },
-  {
-    title: "Usage",
-    code: `<Surface id={schema} data={profile} mode="display" view="card" />`,
-  },
 ];
 
 function GitHubIcon() {
@@ -229,15 +130,16 @@ function CopyButton({ value }: { value: string }) {
 }
 
 function CodeBlock({ title, code }: SourceFile) {
+  const source = code.trimEnd();
   return (
     <figure className="overflow-hidden rounded-xl border bg-muted/40">
       <figcaption className="flex h-10 items-center gap-2 border-b pr-1.5 pl-4 text-muted-foreground">
         <FileCode className="size-4" />
         <span className="flex-1 truncate font-mono text-xs">{title}</span>
-        <CopyButton value={code} />
+        <CopyButton value={source} />
       </figcaption>
-      <pre className="max-h-[420px] overflow-auto p-4 font-mono text-[13px] leading-relaxed">
-        <code>{code}</code>
+      <pre className="max-h-[480px] overflow-auto p-4 font-mono text-[13px] leading-relaxed">
+        <code>{source}</code>
       </pre>
     </figure>
   );
@@ -276,24 +178,30 @@ function CommandBlock({ args }: { args: string }) {
 
 function ComponentPreview({
   children,
-  files,
+  code,
+  annotation,
 }: {
   children: ReactNode;
-  files: readonly SourceFile[];
+  code: readonly SourceFile[];
+  annotation: SourceFile;
 }) {
   return (
     <Tabs defaultValue="preview" className="gap-4">
       <TabsList variant="line">
         <TabsTrigger value="preview">Preview</TabsTrigger>
         <TabsTrigger value="code">Code</TabsTrigger>
+        <TabsTrigger value="annotation">Annotation</TabsTrigger>
       </TabsList>
-      <TabsContent value="preview">
+      <TabsContent value="preview" keepMounted>
         <div className="rounded-xl border p-6 md:p-8">{children}</div>
       </TabsContent>
       <TabsContent value="code" className="flex flex-col gap-4">
-        {files.map((file) => (
+        {code.map((file) => (
           <CodeBlock key={file.title} {...file} />
         ))}
+      </TabsContent>
+      <TabsContent value="annotation">
+        <CodeBlock {...annotation} />
       </TabsContent>
     </Tabs>
   );
@@ -377,14 +285,6 @@ function ExternalBadge({ href, children }: { href: string; children: ReactNode }
   );
 }
 
-function Caption({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-      {children}
-    </p>
-  );
-}
-
 function ReferenceTable({
   columns,
   rows,
@@ -437,115 +337,7 @@ function CodeNames({ names }: { names: readonly string[] }) {
   );
 }
 
-function ViewBrowser({
-  Surface,
-  profile,
-  onChange,
-}: {
-  Surface: SurfaceComponent;
-  profile: Profile;
-  onChange: (data: unknown) => void;
-}) {
-  const [selected, setSelected] = useState<{ mode: Mode; view: string }>({
-    mode: "input",
-    view: "default",
-  });
-  const surface = (
-    <Surface
-      key={`${selected.mode}:${selected.view}`}
-      id={PROFILE_ID}
-      data={profile}
-      mode={selected.mode}
-      view={selected.view}
-      onChange={onChange}
-      onSubmit={({ data }) => onChange(data)}
-    />
-  );
-
-  return (
-    <div className="grid gap-8 md:grid-cols-[9rem_minmax(0,1fr)]">
-      <nav aria-label="Views" className="flex flex-col gap-5">
-        {viewGroups.map((group) => (
-          <div key={group.mode} className="flex flex-col gap-1.5">
-            <p className="px-2.5 text-xs font-medium text-muted-foreground">
-              {group.title}
-            </p>
-            <div className="flex flex-wrap gap-1 md:flex-col">
-              {group.views.map((view) => {
-                const active =
-                  selected.mode === group.mode && selected.view === view;
-                return (
-                  <Button
-                    key={view}
-                    variant={active ? "secondary" : "ghost"}
-                    size="sm"
-                    className="justify-start font-mono text-xs font-normal"
-                    aria-pressed={active}
-                    onClick={() => setSelected({ mode: group.mode, view })}
-                  >
-                    {view}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </nav>
-      <div className="flex min-w-0 flex-col gap-6">
-        <div className="min-h-72">
-          {selected.mode === "display" && selected.view === "card" ? (
-            <div className="max-w-xs rounded-xl border p-5">{surface}</div>
-          ) : (
-            surface
-          )}
-        </div>
-        <CodeBlock
-          title={`profile.annotation.json → views.${selected.view}`}
-          code={JSON.stringify(profileAnnotation.views?.[selected.view], null, 2)}
-        />
-      </div>
-    </div>
-  );
-}
-
 function Homepage() {
-  const [profile, setProfile] = useState<Profile>(initialProfile);
-  const { Surface, WithProfileCard } = useMemo(() => {
-    const schemaResolver = new InMemorySchemaFetchResolver({
-      ...shadcnSchemas,
-      [PROFILE_ID]: profileSchema,
-    });
-    const annotationResolver = new InMemoryAnnotationResolver({
-      [PROFILE_ID]: profileAnnotation,
-    });
-    return {
-      Surface: createSurfaceUi({
-        schemaResolver,
-        annotationResolver,
-        validator: createAjvValidator(),
-        kit: createShadcnKit(),
-      }).Surface,
-      WithProfileCard: createSurfaceUi({
-        schemaResolver,
-        annotationResolver,
-        validator: createAjvValidator(),
-        kit: createShadcnKit({
-          resolvers: [
-            {
-              key: PROFILE_ID,
-              mode: "display",
-              view: "card",
-              component: ProfileCard,
-            },
-          ],
-        }),
-      }).Surface,
-    };
-  }, []);
-  const onChange = (data: unknown) => {
-    if (isProfile(data)) setProfile(data);
-  };
-
   return (
     <div className="min-h-svh">
       <SiteHeader />
@@ -568,8 +360,8 @@ function Homepage() {
           </div>
         </div>
 
-        <ComponentPreview files={profileFiles}>
-          <ViewBrowser Surface={Surface} profile={profile} onChange={onChange} />
+        <ComponentPreview code={profileFiles} annotation={annotationFile}>
+          <ProfileViews />
         </ComponentPreview>
 
         <section className="flex flex-col gap-4">
@@ -615,9 +407,12 @@ function Homepage() {
             Register schemas and annotations in{" "}
             <InlineCode>components/surface/resolvers.ts</InlineCode>. Surface
             matches an annotation to a schema by its{" "}
-            <InlineCode>subject</InlineCode>.
+            <InlineCode>subject</InlineCode>. The block installs this file:
           </p>
-          <CodeBlock title="components/surface/resolvers.ts" code={resolversCode} />
+          <CodeBlock
+            title="components/surface/resolvers.ts"
+            code={resolversSource}
+          />
           <SubHeading>Widgets</SubHeading>
           <p className="text-muted-foreground">
             Set <InlineCode>widget.name</InlineCode> on a field. The names come
@@ -640,34 +435,12 @@ function Homepage() {
             A view is a named presentation, such as{" "}
             <InlineCode>default</InlineCode>, <InlineCode>row</InlineCode>, or{" "}
             <InlineCode>card</InlineCode>. The annotation defines each view's
-            fields. To take over a view with your own component, register it for
-            a schema, mode, and view in{" "}
-            <InlineCode>components/surface/index.tsx</InlineCode>. The component
-            replaces the annotation for that view only.
+            fields. To take over a view with your own component, pass it to{" "}
+            <InlineCode>createShadcnKit</InlineCode> with a schema, mode, and
+            view. The component replaces the annotation for that view only.
           </p>
-          <ComponentPreview files={cardFiles}>
-            <div className="grid items-start gap-8 md:grid-cols-2">
-              <div className="flex flex-col gap-4">
-                <Caption>Annotation</Caption>
-                <div className="max-w-xs rounded-xl border p-5">
-                  <Surface
-                    id={PROFILE_ID}
-                    data={profile}
-                    mode="display"
-                    view="card"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-4">
-                <Caption>Registered component</Caption>
-                <WithProfileCard
-                  id={PROFILE_ID}
-                  data={profile}
-                  mode="display"
-                  view="card"
-                />
-              </div>
-            </div>
+          <ComponentPreview code={cardFiles} annotation={annotationFile}>
+            <CardViews />
           </ComponentPreview>
         </section>
       </main>

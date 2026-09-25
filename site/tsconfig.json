@@ -7,9 +7,11 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "types": ["node", "react", "react-dom", "vite/client"],
     "baseUrl": ".",
     "paths": {
+      "@/components/surface/*": ["../registry/surface/*"],
       "@/*": ["../example/src/*"],
       "@rusl-labs/surface-shadcn": ["../src/index.ts"],
       "react": ["./node_modules/@types/react/index.d.ts"],

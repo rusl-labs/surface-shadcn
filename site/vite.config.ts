@@ -40,12 +40,22 @@ export default defineConfig({
   root: siteRoot,
   plugins: [resolveFromSite(), react(), tailwindcss()],
   resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("../example/src", import.meta.url)),
-      "@rusl-labs/surface-shadcn": fileURLToPath(
-        new URL("../src/index.ts", import.meta.url),
-      ),
-    },
+    // Same layout as an app after `shadcn add`: the kit at @/components/surface,
+    // shadcn primitives at @/components/ui. The more specific alias must come first.
+    alias: [
+      {
+        find: "@/components/surface",
+        replacement: fileURLToPath(new URL("../registry/surface", import.meta.url)),
+      },
+      {
+        find: "@",
+        replacement: fileURLToPath(new URL("../example/src", import.meta.url)),
+      },
+      {
+        find: "@rusl-labs/surface-shadcn",
+        replacement: fileURLToPath(new URL("../src/index.ts", import.meta.url)),
+      },
+    ],
     dedupe: ["react", "react-dom"],
   },
   server: {
