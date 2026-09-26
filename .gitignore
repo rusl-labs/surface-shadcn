@@ -2,6 +2,7 @@ node_modules/
 dist/
 public/r/
 example/dist/
+site/dist/
 .smoke/
 *.tgz
 .DS_Store

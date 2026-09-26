@@ -1,0 +1,151 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://example.com/schemas/profile.json",
+  "targetLibraries": [
+    "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn"
+  ],
+  "views": {
+    "default": {
+      "rest": "omit",
+      "fields": [
+        { "name": "name", "label": "Name" },
+        { "name": "email", "label": "Email" },
+        { "name": "phone", "label": "Phone" },
+        {
+          "name": "role",
+          "label": "Role",
+          "widget": { "name": "toggle-group", "variant": "outline" }
+        },
+        { "name": "bio", "label": "Bio", "widget": { "name": "textarea" } },
+        {
+          "name": "available",
+          "label": "Available for new projects",
+          "widget": { "name": "switch" }
+        }
+      ]
+    },
+    "compact": {
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "",
+          "display": { "omit": true },
+          "fields": [
+            {
+              "label": "",
+              "direction": "horizontal",
+              "fields": [
+                { "name": "name" },
+                { "name": "role", "widget": null }
+              ]
+            },
+            { "name": "email" }
+          ]
+        }
+      ]
+    },
+    "details": {
+      "layout": "stack",
+      "fields": [
+        {
+          "label": "Profile",
+          "fields": [
+            {
+              "name": "photo",
+              "label": "Photo",
+              "fields": [
+                { "name": "url", "label": "Image URL" },
+                { "name": "alt", "label": "Alt text" }
+              ],
+              "display": {
+                "widget": { "name": "avatar", "title": "alt", "size": "xl" }
+              }
+            },
+            { "name": "name", "label": "Full name" },
+            { "name": "bio", "input": { "description": "Up to 280 characters." } }
+          ]
+        },
+        {
+          "label": "Contact",
+          "widget": { "name": "separator" },
+          "fields": [
+            {
+              "name": "email",
+              "label": "Work email",
+              "input": { "description": "Used for sign-in." }
+            },
+            {
+              "name": "phone",
+              "display": { "widget": { "name": "tel", "format": "national" } }
+            }
+          ]
+        },
+        {
+          "label": "Work",
+          "widget": { "name": "separator" },
+          "fields": [
+            { "name": "role", "widget": { "name": "radio-group" } },
+            { "name": "available", "label": "Open to new projects" }
+          ]
+        }
+      ]
+    },
+    "identity": {
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "",
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "photo",
+              "label": "",
+              "widget": { "name": "avatar", "title": "alt", "size": "lg" }
+            },
+            { "name": "name", "label": "" },
+            { "template": "{{role}} · {{email}}" }
+          ]
+        }
+      ]
+    },
+    "row": {
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "",
+          "direction": "horizontal",
+          "input": { "omit": true },
+          "fields": [
+            { "name": "name", "label": "" },
+            { "name": "role", "label": "" },
+            { "name": "email", "label": "" },
+            { "name": "phone", "label": "" }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "",
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "photo",
+              "label": "",
+              "widget": { "name": "avatar", "title": "alt", "size": "md" }
+            },
+            { "name": "name", "label": "" },
+            { "template": "{{role}}" },
+            {
+              "label": "",
+              "widget": { "name": "separator" },
+              "fields": [{ "name": "email" }, { "name": "phone" }]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

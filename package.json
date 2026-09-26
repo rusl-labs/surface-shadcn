@@ -28,6 +28,9 @@
     "check:runtime": "bun scripts/assert-surface-runtime.ts",
     "prepack": "bun run build",
     "dev": "vite --config example/vite.config.ts",
+    "site:install": "bun install --cwd site",
+    "site:dev": "bun --cwd site dev",
+    "site:build": "bun --cwd site build",
     "test:next": "bun scripts/test-next.ts",
     "test:next:clean": "bun scripts/test-next.ts clean",
     "build:example": "vite build --config example/vite.config.ts"

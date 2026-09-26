@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node", "react", "react-dom", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@/components/surface/*": ["../registry/surface/*"],
+      "@/*": ["../example/src/*"],
+      "@rusl-labs/surface-shadcn": ["../src/index.ts"],
+      "react": ["./node_modules/@types/react/index.d.ts"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom/index.d.ts"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"],
+      "*": ["./node_modules/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
