@@ -26,17 +26,22 @@
     },
     "compact": {
       "rest": "omit",
-      "layout": "stack",
       "fields": [
         {
           "label": "",
-          "direction": "horizontal",
+          "display": { "omit": true },
           "fields": [
-            { "name": "name" },
-            { "name": "role", "widget": null }
+            {
+              "label": "",
+              "direction": "horizontal",
+              "fields": [
+                { "name": "name" },
+                { "name": "role", "widget": null }
+              ]
+            },
+            { "name": "email" }
           ]
-        },
-        { "name": "email" }
+        }
       ]
     },
     "details": {
@@ -89,42 +94,56 @@
       "rest": "omit",
       "fields": [
         {
-          "name": "photo",
           "label": "",
-          "widget": { "name": "avatar", "title": "alt", "size": "lg" },
-          "input": { "omit": true }
-        },
-        { "name": "name", "display": { "label": "" } },
-        { "name": "role", "display": { "omit": true } },
-        { "template": "{{role}} · {{email}}", "input": { "omit": true } }
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "photo",
+              "label": "",
+              "widget": { "name": "avatar", "title": "alt", "size": "lg" }
+            },
+            { "name": "name", "label": "" },
+            { "template": "{{role}} · {{email}}" }
+          ]
+        }
       ]
     },
     "row": {
       "rest": "omit",
-      "direction": "horizontal",
       "fields": [
-        { "name": "name", "display": { "label": "" } },
-        { "name": "role", "widget": null, "display": { "label": "" } },
-        { "name": "email", "display": { "label": "" } },
-        { "name": "phone", "display": { "label": "" } }
+        {
+          "label": "",
+          "direction": "horizontal",
+          "input": { "omit": true },
+          "fields": [
+            { "name": "name", "label": "" },
+            { "name": "role", "label": "" },
+            { "name": "email", "label": "" },
+            { "name": "phone", "label": "" }
+          ]
+        }
       ]
     },
     "card": {
       "rest": "omit",
       "fields": [
         {
-          "name": "photo",
           "label": "",
-          "widget": { "name": "avatar", "title": "alt", "size": "md" },
-          "input": { "omit": true }
-        },
-        { "name": "name", "display": { "label": "" } },
-        { "name": "role", "display": { "omit": true } },
-        { "template": "{{role}}", "input": { "omit": true } },
-        {
-          "label": "",
-          "widget": { "name": "separator" },
-          "fields": [{ "name": "email" }, { "name": "phone" }]
+          "input": { "omit": true },
+          "fields": [
+            {
+              "name": "photo",
+              "label": "",
+              "widget": { "name": "avatar", "title": "alt", "size": "md" }
+            },
+            { "name": "name", "label": "" },
+            { "template": "{{role}}" },
+            {
+              "label": "",
+              "widget": { "name": "separator" },
+              "fields": [{ "name": "email" }, { "name": "phone" }]
+            }
+          ]
         }
       ]
     }

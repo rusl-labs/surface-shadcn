@@ -3,6 +3,7 @@ import {
   InMemoryAnnotationResolver,
   InMemorySchemaFetchResolver,
   createSurfaceUi,
+  listFields,
   type SurfaceMode,
 } from "@rusl-labs/surface";
 import { createAjvValidator } from "@rusl-labs/surface-ajv";
@@ -26,24 +27,38 @@ const { Surface } = createSurfaceUi({
 });
 
 const modes: readonly SurfaceMode[] = ["input", "display"];
-const views = Object.keys(annotation.views);
+
+// A view is listed under a mode when the annotation shows at least one field in that mode.
+const menu = modes.map((mode) => ({
+  mode,
+  views: Object.keys(annotation.views).filter(
+    (view) =>
+      listFields({
+        schema,
+        annotation,
+        coordinate: { subject: schema.$id, path: [] },
+        mode,
+        view,
+      }).length > 0,
+  ),
+}));
 
 export function ProfileViews() {
-  const [mode, setMode] = useState<SurfaceMode>("input");
-  const [view, setView] = useState(views[0]);
+  const [mode, setMode] = useState(menu[0].mode);
+  const [view, setView] = useState(menu[0].views[0]);
   const [profile, setProfile] = useState<unknown>(sample);
 
   return (
     <div className="grid gap-8 md:grid-cols-[9rem_minmax(0,1fr)]">
       <nav aria-label="Views" className="flex flex-col gap-5">
-        {modes.map((itemMode) => (
-          <div key={itemMode} className="flex flex-col gap-1.5">
+        {menu.map((group) => (
+          <div key={group.mode} className="flex flex-col gap-1.5">
             <p className="px-2.5 text-xs font-medium text-muted-foreground capitalize">
-              {itemMode}
+              {group.mode}
             </p>
             <div className="flex flex-wrap gap-1 md:flex-col">
-              {views.map((itemView) => {
-                const active = itemMode === mode && itemView === view;
+              {group.views.map((itemView) => {
+                const active = group.mode === mode && itemView === view;
                 return (
                   <Button
                     key={itemView}
@@ -52,7 +67,7 @@ export function ProfileViews() {
                     className="justify-start font-mono text-xs font-normal"
                     aria-pressed={active}
                     onClick={() => {
-                      setMode(itemMode);
+                      setMode(group.mode);
                       setView(itemView);
                     }}
                   >
