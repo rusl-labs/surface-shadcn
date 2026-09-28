@@ -25,7 +25,7 @@ if (fromTests !== fromPlayground || fromTests !== fromViteAlias) {
 const kit = createRegistryKit({ fallback: () => null });
 if (typeof kit.getViews !== "function") {
   throw new Error(
-    `Resolved Surface at ${fromTests} has no getViews. This workspace needs the local core with view discovery and item annotations, not published 0.1.0.`,
+    `Resolved Surface at ${fromTests} has no getViews. This workspace needs @rusl-labs/surface 0.1.1 or later.`,
   );
 }
 

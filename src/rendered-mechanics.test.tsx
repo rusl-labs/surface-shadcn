@@ -379,6 +379,28 @@ test("a toggle-group widget writes the enum value and not the label", async () =
   expect(screen.queryByRole("combobox")).toBeNull();
 });
 
+test("a combobox widget shows its placeholder until an enum value is chosen", async () => {
+  const screen = mount(
+    { type: "string", enum: ["Partner", "Colleague"] },
+    undefined,
+    {
+      entry: {
+        label: "Relationship",
+        widget: { name: "combobox", placeholder: "Pick one" },
+      },
+    },
+  );
+  const trigger = await screen.findByRole("combobox", { name: "Relationship" });
+  expect(trigger.textContent).toBe("Pick one");
+  expect(trigger.hasAttribute("data-placeholder")).toBe(true);
+  const user = userEvent.setup();
+  await user.click(trigger);
+  await user.click(await screen.findByRole("option", { name: "Colleague" }));
+  await waitFor(() => expect(screen.data()).toBe("Colleague"));
+  expect(trigger.textContent).toBe("Colleague");
+  expect(trigger.hasAttribute("data-placeholder")).toBe(false);
+});
+
 test("inline image items bind their own URLs and dimensions while input remains editable", async () => {
   const schema = {
     $id: "urn:surface:image-items",

@@ -27,7 +27,7 @@ One standard `shadcn add` operation must install:
 
 The consumer must not write `createSurfaceUi`, assemble default registrations, add a provider, or configure resolvers to render the first public schema URL. The generated entry point performs that wiring once. Annotations are optional for the first form; the application owns persistence and any private-source authentication policy. Installation must honor the app's configured paths and imports. Missing schemas and validation failures must produce visible errors, not empty success states.
 
-The guide proposes `https://ui.rusl.com/r/surface.json` and an import from `@/components/surface` (rewritten for the host's paths). **The public address is not published.** The registry now includes the generated entry point and resolvers; the local Next consumer below exercises that installation without publication.
+The public address is `rusl-labs/surface-shadcn/surface`, which the shadcn CLI resolves to `registry.json` on this repository's default branch (`#<tag>` pins a release), and the import is `@/components/surface` (rewritten for the host's paths). The registry includes the generated entry point and resolvers; the local Next consumer below exercises that installation from a local build of the item.
 
 ## Current implementation
 
@@ -164,7 +164,7 @@ import { Surface } from "@/components/surface";
 
 Use the consuming application's actual alias instead of assuming `@/components`. The installation proof used `~/features/surface` for the kit and `~/design-system` for primitives.
 
-**Not published:** neither the npm package nor a public registry endpoint has been released. The generated registry declares the intended npm dependency `@rusl-labs/surface-shadcn@0.1.0`; public installation requires publishing that package and serving the registry. For verification before publication, an isolated copy of the generated registry redirected only that dependency to the local `npm pack` tarball, then the standard shadcn CLI installed all wrappers and dependencies into a separate Vite app. No workspace aliases or source links supplied its runtime.
+**Release:** `shadcn add rusl-labs/surface-shadcn/surface` installs the item from this repository, and the Pages site serves the same item at `/r/surface.json`. The item depends on the npm release named by its `@rusl-labs/surface-shadcn` pin, which `.github/workflows/publish.yml` publishes from `v*` tags. For verification before a release, an isolated copy of the generated registry redirected only that dependency to the local `npm pack` tarball, then the standard shadcn CLI installed all wrappers and dependencies into a separate Vite app. No workspace aliases or source links supplied its runtime.
 
 ### A clean Next.js consumer
 
@@ -173,7 +173,7 @@ bun run test:next        # build, pack, scaffold, shadcn install, next build
 bun run test:next:clean  # remove only this checkout's owned sandbox
 ```
 
-`scripts/test-next.ts` uses a single fixed directory per checkout under `~/.cache/surface-shadcn/<checkout-hash>/`, outside this workspace. It pins create-next-app 16.3.4 and shadcn 4.21.0, initializes Base UI/Nova, and installs the actual generated registry through `shadcn add`. Only the unpublished support-package dependency in the local registry copy is redirected to a local tarball. No registry server, workspace links, git initialization, or manual Surface wiring is involved.
+`scripts/test-next.ts` uses a single fixed directory per checkout under `~/.cache/surface-shadcn/<checkout-hash>/`, outside this workspace. It pins create-next-app 16.3.4 and shadcn 4.21.0, initializes Base UI/Nova, and installs the actual generated registry through `shadcn add`. Only the support-package dependency in the local registry copy is redirected, to a tarball of this checkout's build. No registry server, workspace links, git initialization, or manual Surface wiring is involved.
 
 The script adds a consumer page using the existing contact object schema, then runs the Next production build. It prints the command for starting the app. The page includes phone/money, object/array renderers, email, a boolean, and nested location fields. Sample and locale selectors demonstrate US/USD and Japanese values overriding AU/AUD defaults, plus creating values from those defaults. Dependencies require internet during installation; supported canonical schemas are bundled for offline rendering and validation. Stop the server before cleaning.
 

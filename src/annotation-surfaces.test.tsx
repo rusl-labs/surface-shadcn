@@ -316,6 +316,9 @@ test("display detail omits helper plaques and empty chapel fields", async () => 
     view: "detail",
   });
   await waitFor(() => expect(product.getByText("Laptop")).toBeTruthy());
+  await waitFor(() =>
+    expect(product.container.querySelector("img")).toBeTruthy(),
+  );
   expect(product.queryByText("Shown to shoppers on listings and detail pages.")).toBeNull();
   expect(product.queryByText("Merchant-assigned inventory code.")).toBeNull();
   expect(product.queryByText("GS1 barcode: 8, 12, 13, or 14 digits.")).toBeNull();
@@ -324,7 +327,6 @@ test("display detail omits helper plaques and empty chapel fields", async () => 
   expect(product.container.querySelector("dt")).toBeNull();
   expect(product.getByText("Laptop").closest("[data-slot=field-legend]")).toBeTruthy();
   expect(product.getByText("Portable workstation.")).toBeTruthy();
-  expect(product.container.querySelector("img")).toBeTruthy();
   cleanup();
 
   const contact = mount({
@@ -335,6 +337,9 @@ test("display detail omits helper plaques and empty chapel fields", async () => 
     view: "detail",
   });
   await waitFor(() => expect(contact.getByText("Alex Morgan")).toBeTruthy());
+  await waitFor(() =>
+    expect(contact.getByText("alex@example.com")).toBeTruthy(),
+  );
   expect(contact.queryByText("The one name every contact has.")).toBeNull();
   expect(contact.queryByText("Who this contact is.")).toBeNull();
   expect(contact.queryByText("Ways to reach this contact.")).toBeNull();
@@ -347,7 +352,6 @@ test("display detail omits helper plaques and empty chapel fields", async () => 
   expect(contact.queryByText("Links")).toBeNull();
   expect(contact.queryByText("mobile")).toBeNull();
   expect(contact.getByText("Alex Morgan").closest("[data-slot=field-legend]")).toBeTruthy();
-  expect(contact.getByText("alex@example.com")).toBeTruthy();
   expect(contact.container.querySelector("ul")).toBeTruthy();
 });
 
@@ -362,6 +366,9 @@ test("Product input default uses a switch for status and a textarea for descript
   const status = await waitFor(() =>
     screen.getByRole("switch", { name: "Status: archived or active" }),
   );
+  await waitFor(() =>
+    expect(screen.getAllByPlaceholderText("Image URL").length).toBeGreaterThan(0),
+  );
   expect(
     status.getAttribute("data-checked") !== null ||
       status.getAttribute("aria-checked") === "true",
@@ -372,7 +379,6 @@ test("Product input default uses a switch for status and a textarea for descript
   expect(description.tagName).toBe("TEXTAREA");
   expect(screen.queryByText("alt")).toBeNull();
   expect(screen.queryByText("url")).toBeNull();
-  expect(screen.getAllByPlaceholderText("Image URL").length).toBeGreaterThan(0);
   expect(screen.getAllByPlaceholderText("Alt text").length).toBeGreaterThan(0);
 });
 

@@ -366,12 +366,18 @@ function Homepage() {
 
         <section className="flex flex-col gap-4">
           <SectionHeading id="installation">Installation</SectionHeading>
+          <p className="text-muted-foreground">
+            Requires React 19, Tailwind CSS v4, and shadcn/ui set up for Base
+            UI. For a new app, run{" "}
+            <InlineCode>npx shadcn@latest init --base base</InlineCode> first.
+          </p>
           <CommandBlock args={INSTALL_ARGS} />
           <p className="text-muted-foreground">
             This adds the renderers to{" "}
             <InlineCode>components/surface</InlineCode> and installs{" "}
-            <InlineCode>@rusl-labs/surface</InlineCode>, the AJV validator, and
-            the shadcn components they use.
+            <InlineCode>@rusl-labs/surface</InlineCode>,{" "}
+            <InlineCode>@rusl-labs/surface-shadcn</InlineCode>, the AJV
+            validator, and the shadcn components they use.
           </p>
         </section>
 
