@@ -1076,11 +1076,10 @@
               <span class="stamp">TARGET EXPERIENCE</span>
             </div>
             <div class="callout target-note">
-              <strong>README-driven development.</strong> The public registry
-              address below is still proposed and unpublished. The generated
-              entry point and resolvers now ship in the local block. Try the
-              complete installation in a disposable Next app with the commands
-              below.
+              <strong>README-driven development.</strong> The command below
+              installs the block from the GitHub repository. The generated
+              entry point and resolvers ship in the block. Try the complete
+              installation in a disposable Next app with the commands below.
             </div>
             <div class="controls">
               <div class="control">
@@ -1110,7 +1109,7 @@
                 </p>
                 <div class="start-code">
                   <div class="code-head">
-                    Proposed public command · not live
+                    Public command
                   </div>
                   <pre><code id="install-command"></code></pre>
                 </div>
@@ -1975,7 +1974,7 @@ bun run test:next:clean</code></pre>
         const runners = { bun: "bunx --bun", npm: "npx", pnpm: "pnpm dlx" };
         $("install-command").textContent =
           runners[state.runner] +
-          " shadcn@latest add https://ui.rusl.com/r/surface.json";
+          " shadcn@latest add rusl-labs/surface-shadcn/surface";
         const entry = paths().kit.replace(/\/kit$/, "");
         $("getting-started-code").textContent =
           `"use client";\n\nimport { Surface } from "${entry}";\n\nconst schemaId =\n  "https://resources.rusl.com/resources/pragmatic/schemas/contact.card";\n\nexport default function ContactForm() {\n  return (\n    <Surface\n      id={schemaId}\n      mode="input"\n      onSubmit={({ data }) => console.log(data)}\n    />\n  );\n}`;

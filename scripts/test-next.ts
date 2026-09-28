@@ -127,7 +127,7 @@ async function setup() {
   const tarball = join(sandbox, "surface-shadcn.tgz");
   await run(["bun", "pm", "pack", "--filename", tarball, "--ignore-scripts"]);
 
-  // Only the unpublished package address changes; installed source is untouched.
+  // Only the support package address changes, to this checkout's build; installed source is untouched.
   const manifest = await Bun.file(join(repo, "public/r/surface.json")).json();
   const pkg = await Bun.file(join(repo, "package.json")).json();
   const dependency = `${pkg.name}@${pkg.version}`;
