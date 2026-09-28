@@ -3,6 +3,7 @@
 import type { ReactElement } from "react";
 import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
 import { isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
+import { Button } from "@/components/ui/button";
 import {
   Combobox,
   ComboboxContent,
@@ -82,7 +83,12 @@ export function ComboboxInput({ data }: SurfaceProps): ReactElement {
       >
         <ComboboxTrigger
           id={fs.controlId}
-          className="w-full"
+          render={
+            <Button
+              variant="outline"
+              className="w-full justify-between font-normal data-placeholder:text-muted-foreground"
+            />
+          }
           aria-invalid={fs.invalid || undefined}
           aria-describedby={fs.describedBy}
         >
