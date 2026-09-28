@@ -10,7 +10,7 @@
       "description": "Schema-driven input and display using your application's local shadcn Base UI components.",
       "dependencies": [
         "@rusl-labs/surface-shadcn@0.1.0",
-        "@rusl-labs/surface@0.1.0",
+        "@rusl-labs/surface@0.1.1",
         "@rusl-labs/surface-ajv@0.1.0",
         "@uiw/react-codemirror",
         "@uiw/codemirror-extensions-langs",
