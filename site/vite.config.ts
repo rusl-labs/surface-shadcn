@@ -38,6 +38,8 @@ function resolveFromSite(): Plugin {
 
 export default defineConfig({
   root: siteRoot,
+  // GitHub Pages serves a project site under /<repo>/; the Pages workflow sets this.
+  base: process.env.SITE_BASE ?? "/",
   plugins: [resolveFromSite(), react(), tailwindcss()],
   resolve: {
     // Same layout as an app after `shadcn add`: the kit at @/components/surface,
