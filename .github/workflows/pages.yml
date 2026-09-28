@@ -1,0 +1,60 @@
+name: Pages
+
+on:
+  push:
+    branches: [feat/surface-shadcn]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # base_path is /surface-shadcn on github.io and empty with a custom domain.
+      # Pull requests only check the build, so they skip Pages and build at /.
+      - id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v6
+
+      - run: bun install --frozen-lockfile
+        working-directory: site
+
+      - run: bun run build
+        working-directory: site
+        env:
+          SITE_BASE: ${{ steps.pages.outputs.base_path }}/
+
+      - name: Build the shadcn registry into the site
+        run: bunx --bun shadcn@4.21.0 build --output site/dist/r
+
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

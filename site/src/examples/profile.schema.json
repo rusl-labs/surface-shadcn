@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/profile.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "email", "phone", "role"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "email": { "type": "string", "format": "email" },
+    "phone": {
+      "$ref": "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/phone"
+    },
+    "role": { "type": "string", "enum": ["Design", "Engineering", "Product"] },
+    "bio": { "type": "string", "maxLength": 280 },
+    "available": { "type": "boolean" },
+    "photo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "alt": { "type": "string" }
+      }
+    }
+  }
+}
