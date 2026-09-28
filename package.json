@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.0.0",
-    "@rusl-labs/surface": "file:../schema-driven-ui/packages/core",
+    "@rusl-labs/surface": "0.1.1",
     "@rusl-labs/surface-ajv": "0.1.0",
     "@tailwindcss/vite": "^4.1.0",
     "@testing-library/react": "^16.3.0",
@@ -60,9 +60,6 @@
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "vite": "^7.0.0"
-  },
-  "overrides": {
-    "@rusl-labs/surface": "file:../schema-driven-ui/packages/core"
   },
   "dependencies": {
     "@codemirror/view": "^6.43.11",
