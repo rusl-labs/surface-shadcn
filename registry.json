@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "surface-shadcn",
-  "homepage": "https://rusl.com",
+  "homepage": "https://surface-shadcn.rusl.com",
   "items": [
     {
       "name": "surface",
