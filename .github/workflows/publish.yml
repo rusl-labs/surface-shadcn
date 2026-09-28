@@ -1,0 +1,63 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # `shadcn add` installs the npm version pinned in registry.json, so the
+      # tag, package.json and that pin must all name the same release.
+      - name: Check the tag matches package.json and registry.json
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          name=$(jq -r .name package.json)
+          version=$(jq -r .version package.json)
+          pinned=$(jq -r --arg name "$name" \
+            '[.items[].dependencies[]? | select(startswith($name + "@")) | ltrimstr($name + "@")] | unique | join(" ")' \
+            registry.json)
+          if [ "$version" != "$tag" ]; then
+            echo "::error::Tag v$tag does not match $name@$version in package.json"
+            exit 1
+          fi
+          if [ "$pinned" != "$version" ]; then
+            echo "::error::registry.json pins $name@${pinned:-nothing}; expected $name@$version"
+            exit 1
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing requires npm ≥ 11.5.1 (OIDC auth, no NPM_TOKEN).
+      - run: npm install -g npm@^11.15.0
+
+      # npm only accepts a trusted publisher for a package that already exists,
+      # so the first release is published by hand and its tag finds it there.
+      - name: Publish to npm
+        run: |
+          set -euo pipefail
+          spec="$(jq -r .name package.json)@$(jq -r .version package.json)"
+          if npm view "$spec" version >/dev/null 2>&1; then
+            echo "$spec is already on npm; nothing to publish."
+            exit 0
+          fi
+          npm publish --access public
