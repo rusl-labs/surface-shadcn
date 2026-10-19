@@ -13,14 +13,17 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import resolversSource from "../../registry/surface/resolvers.ts?raw";
-import { CardViews } from "./examples/card-views";
+import { CardViews, ReferenceViews, ContextViews } from "./examples/card-views";
 import cardViewsSource from "./examples/card-views.tsx?raw";
 import profileCardSource from "./examples/profile-card.tsx?raw";
-import { ProfileViews } from "./examples/profile-views";
-import profileViewsSource from "./examples/profile-views.tsx?raw";
-import annotationSource from "./examples/profile.annotation.json?raw";
+import profileComponentsSource from "./examples/profile-components.tsx?raw";
+import { EventViews } from "./examples/event-views";
+import eventViewsSource from "./examples/event-views.tsx?raw";
+import eventSchemaSource from "./examples/event.schema.json?raw";
+import annotationSource from "./examples/event.annotation.json?raw";
 import sampleSource from "./examples/profile.sample.json?raw";
 import schemaSource from "./examples/profile.schema.json?raw";
+import { Playground } from "./playground";
 
 const REPOSITORY = "https://github.com/rusl-labs/surface-shadcn";
 const SURFACE = "https://github.com/rusl-labs/surface";
@@ -44,26 +47,54 @@ interface SourceFile {
 }
 
 const annotationFile: SourceFile = {
-  title: `${EXAMPLES}/profile.annotation.json`,
+  title: `${EXAMPLES}/event.annotation.json`,
   code: annotationSource,
 };
 
-const profileFiles: readonly SourceFile[] = [
-  { title: `${EXAMPLES}/profile-views.tsx`, code: profileViewsSource },
-  { title: `${EXAMPLES}/profile.schema.json`, code: schemaSource },
-  { title: `${EXAMPLES}/profile.sample.json`, code: sampleSource },
+const eventFiles: readonly SourceFile[] = [
+  { title: `${EXAMPLES}/event-views.tsx`, code: eventViewsSource },
+  { title: `${EXAMPLES}/event.schema.json`, code: eventSchemaSource },
 ];
 
 const cardFiles: readonly SourceFile[] = [
   { title: `${EXAMPLES}/card-views.tsx`, code: cardViewsSource },
   { title: `${EXAMPLES}/profile-card.tsx`, code: profileCardSource },
+  { title: `${EXAMPLES}/profile-components.tsx`, code: profileComponentsSource },
+  { title: `${EXAMPLES}/profile.schema.json`, code: schemaSource },
+  { title: `${EXAMPLES}/profile.sample.json`, code: sampleSource },
 ];
 
-const usageCode = `import { Surface } from "@/components/surface"
+const usageCode = `// Register components by data type, mode, and your own view name.
+const kit = createShadcnKit({ resolvers: [
+  { key: profileType, mode: "display", view: "byline", component: ProfileByline },
+  { key: profileType, mode: "input", view: "edit", component: ProfileEdit },
+] })
 
-<Surface id={schemaId} mode="input" view="default" onSubmit={({ data }) => console.log(data)} />
+const { Surface } = createSurfaceUi({ schemaResolver, validator, kit })
 
-<Surface id={schemaId} mode="display" view="card" data={record} />`;
+<Surface id={profileType} mode="display" view="byline" data={profile} />
+<Surface id={profileType} mode="input" view="edit" data={profile} onChange={setProfile} />`;
+
+const referenceCode = `// Register a named view for the definition.
+const kit = createShadcnKit({ resolvers: [
+  {
+    key: profileType + "#/$defs/photo",
+    mode: "display",
+    view: "avatar",
+    component: ProfilePhoto,
+  },
+] })
+
+// Inside ProfileIdentity, use the configured Surface from context.
+const { Surface } = useSurface()
+
+<Surface
+  id="photo"
+  schema={{ $ref: "#/$defs/photo" }}
+  mode="display"
+  view="avatar"
+  data={data.photo}
+/>`;
 
 const annotationKeys: readonly { readonly key: string; readonly does: string }[] = [
   { key: "views", does: "Named presentations. Other views inherit field settings from default." },
@@ -183,14 +214,14 @@ function ComponentPreview({
 }: {
   children: ReactNode;
   code: readonly SourceFile[];
-  annotation: SourceFile;
+  annotation?: SourceFile;
 }) {
   return (
     <Tabs defaultValue="preview" className="gap-4">
       <TabsList variant="line">
         <TabsTrigger value="preview">Preview</TabsTrigger>
         <TabsTrigger value="code">Code</TabsTrigger>
-        <TabsTrigger value="annotation">Annotation</TabsTrigger>
+        {annotation && <TabsTrigger value="annotation">Annotation</TabsTrigger>}
       </TabsList>
       <TabsContent value="preview" keepMounted>
         <div className="rounded-xl border p-6 md:p-8">{children}</div>
@@ -200,9 +231,9 @@ function ComponentPreview({
           <CodeBlock key={file.title} {...file} />
         ))}
       </TabsContent>
-      <TabsContent value="annotation">
+      {annotation && <TabsContent value="annotation">
         <CodeBlock {...annotation} />
-      </TabsContent>
+      </TabsContent>}
     </Tabs>
   );
 }
@@ -221,11 +252,14 @@ function SiteHeader() {
           <a href="#usage" className="hover:text-foreground">
             Usage
           </a>
-          <a href="#annotations" className="hover:text-foreground">
-            Annotations
-          </a>
           <a href="#views" className="hover:text-foreground">
-            Views
+            Named views
+          </a>
+          <a href="#annotations" className="hover:text-foreground">
+            Dynamic rendering
+          </a>
+          <a href="#playground" className="hover:text-foreground">
+            Playground
           </a>
         </nav>
         <Button
@@ -344,25 +378,59 @@ function Homepage() {
       <main className="mx-auto flex max-w-5xl flex-col gap-12 px-6 pt-10 pb-24">
         <div className="flex flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">
-            surface-shadcn
+            One Surface. Many views.
           </h1>
           <p className="text-muted-foreground">
-            The shadcn/ui kit for{" "}
-            <TextLink href={SURFACE}>Surface</TextLink>. It renders a JSON
-            Schema as forms and displays with your own components. One
-            annotation defines every view.
+            One interface for typed data, input or display. Bring your own
+            components or fall back to dynamic rendering—in your app or agent chat.
           </p>
           <div className="flex flex-wrap gap-2">
             <ExternalBadge href={SURFACE}>Surface</ExternalBadge>
-            <ExternalBadge href={ANNOTATION_REFERENCE}>
-              Annotation reference
-            </ExternalBadge>
+            <ExternalBadge href={REPOSITORY}>Get the shadcn/ui kit</ExternalBadge>
           </div>
         </div>
 
-        <ComponentPreview code={profileFiles} annotation={annotationFile}>
-          <ProfileViews />
-        </ComponentPreview>
+        <section className="flex flex-col gap-4">
+          <SectionHeading id="views">Your data. Your views.</SectionHeading>
+          <p className="text-muted-foreground">
+            JSON Schema defines your data types. You name the views: identity,
+            card, row, or anything your app needs. Here are a few for a profile.
+          </p>
+          <ComponentPreview code={cardFiles}>
+            <CardViews />
+          </ComponentPreview>
+          <p className="text-sm text-muted-foreground">
+            One interface to render them. One place to update them.
+          </p>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <SectionHeading id="references">Reuse types, not just whole screens.</SectionHeading>
+          <p className="text-muted-foreground">
+            A <InlineCode>$ref</InlineCode> isn't just an instruction to inline fields.
+            Surface resolves the referenced type and can select its registered
+            component—even inside another view. Define it once in <InlineCode>$defs</InlineCode>,
+            then reuse it.
+          </p>
+          <ReferenceViews />
+          <details className="rounded-xl border p-4">
+            <summary className="cursor-pointer text-sm font-medium">See the reference and registration</summary>
+            <div className="mt-4 grid gap-4">
+              <CodeBlock title="profile.schema.json" code={schemaSource} />
+              <CodeBlock title="Register the definition, render the reference" code={referenceCode} />
+            </div>
+          </details>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <SectionHeading id="contexts">Your app and agents. The same views.</SectionHeading>
+          <p className="text-muted-foreground">
+            Both contexts render the same registered identity view. Update the
+            component once, and both change with it.
+          </p>
+          <ContextViews />
+          <p className="text-sm text-muted-foreground">Illustrative chat UI—not a separate agent-generated component.</p>
+        </section>
 
         <section className="flex flex-col gap-4">
           <SectionHeading id="installation">Installation</SectionHeading>
@@ -372,36 +440,28 @@ function Homepage() {
             <InlineCode>npx shadcn@latest init --base base</InlineCode> first.
           </p>
           <CommandBlock args={INSTALL_ARGS} />
-          <p className="text-muted-foreground">
-            This adds the renderers to{" "}
-            <InlineCode>components/surface</InlineCode> and installs{" "}
-            <InlineCode>@rusl-labs/surface</InlineCode>,{" "}
-            <InlineCode>@rusl-labs/surface-shadcn</InlineCode>, the AJV
-            validator, and the shadcn components they use.
-          </p>
         </section>
 
         <section className="flex flex-col gap-4">
           <SectionHeading id="usage">Usage</SectionHeading>
-          <p className="text-muted-foreground">
-            <InlineCode>id</InlineCode> is the schema{" "}
-            <InlineCode>$id</InlineCode>. <InlineCode>mode</InlineCode> is{" "}
-            <InlineCode>input</InlineCode> or <InlineCode>display</InlineCode>.{" "}
-            <InlineCode>view</InlineCode> names a view in the annotation.
-            Schemas that are not registered locally are fetched from their URL.
-          </p>
           <CodeBlock title="app/page.tsx" code={usageCode} />
         </section>
 
         <section className="flex flex-col gap-4">
-          <SectionHeading id="annotations">Annotations</SectionHeading>
+          <SectionHeading id="annotations">No custom view? Go dynamic.</SectionHeading>
           <p className="text-muted-foreground">
-            An annotation is a JSON document for one schema. It names views and
-            lists each view's fields, labels, sections, and widgets. The schema
-            stays the data contract. See the{" "}
-            <TextLink href={ANNOTATION_REFERENCE}>annotation reference</TextLink>
-            .
+            No event component registered here. Surface uses the schema and
+            annotations to shape the same display views—identity, row, card,
+            and byline—plus full and focused input forms. Same data, different
+            fields, layout, and widgets.
           </p>
+          <ComponentPreview code={eventFiles} annotation={annotationFile}>
+            <EventViews />
+          </ComponentPreview>
+          <details className="rounded-xl border p-4">
+            <summary className="cursor-pointer text-sm font-medium">Annotation &amp; widget reference</summary>
+            <div className="mt-4 flex flex-col gap-4">
+          <TextLink href={ANNOTATION_REFERENCE}>Full annotation reference</TextLink>
           <ReferenceTable
             columns={["Key", "What it does"]}
             rows={annotationKeys.map((row) => [
@@ -433,21 +493,19 @@ function Homepage() {
               widget.renders,
             ])}
           />
+            </div>
+          </details>
+          <p className="text-sm text-muted-foreground">
+            Building with an agent? <TextLink href={`${import.meta.env.BASE_URL}llms.txt`}>llms.txt</TextLink>
+          </p>
         </section>
 
-        <section className="flex flex-col gap-4">
-          <SectionHeading id="views">Views</SectionHeading>
+        <section className="flex min-w-0 flex-col gap-4">
+          <SectionHeading id="playground">Playground</SectionHeading>
           <p className="text-muted-foreground">
-            A view is a named presentation, such as{" "}
-            <InlineCode>default</InlineCode>, <InlineCode>row</InlineCode>, or{" "}
-            <InlineCode>card</InlineCode>. The annotation defines each view's
-            fields. To take over a view with your own component, pass it to{" "}
-            <InlineCode>createShadcnKit</InlineCode> with a schema, mode, and
-            view. The component replaces the annotation for that view only.
+            Your schema, annotations, and data. Edit the JSON and see Surface respond.
           </p>
-          <ComponentPreview code={cardFiles} annotation={annotationFile}>
-            <CardViews />
-          </ComponentPreview>
+          <Playground />
         </section>
       </main>
     </div>

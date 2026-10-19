@@ -1,0 +1,77 @@
+# surface-shadcn
+
+> One Surface. Many views. One interface for typed data, input or display. Bring your own components or fall back to dynamic rendering—in your app or agent chat.
+
+surface-shadcn is the React and shadcn/ui kit for Surface. Lead with named views for typed data, not schema-generated forms. Named views provide shared presentation conventions across application UI and agent chat. The broader Surface approach can also be used across mobile experiences; this kit targets React web interfaces, not native mobile rendering.
+
+## Named views first
+
+Use view names such as identity, row, and card, or names specific to the application. These are conventions, not a fixed list. Reusing registered components for named views keeps data presentation and collection consistent with the application's styling and theme.
+
+Register a custom component with createShadcnKit for a schema, mode, and view. Custom components do not require annotations. The first homepage example is entirely handcrafted: identity, row, card, and byline in display mode, plus edit in input mode. These names are application registrations, not built-in choices or an exhaustive list. Editing the profile updates the data shared by all five views. See site/src/examples/card-views.tsx, profile-components.tsx, and profile-card.tsx in the repository.
+
+The app and illustrative chat examples call the same registered identity view. This demonstrates shared rendering, not a live agent integration. Register once and reuse the component rather than asking an agent to recreate the UI.
+
+## References and definitions
+
+JSON Schema uses $ref and $defs (plural), not $def. Surface resolves references with document scope and preserves the referenced subject for renderer selection. A component can be registered for a definition URI such as https://example.com/schemas/profile.json#/$defs/photo, not just for a whole document.
+
+The profile schema defines photo under $defs and refers to it from properties.photo using { "$ref": "#/$defs/photo" }. ProfilePhoto is registered for the absolute definition URI with mode display and view avatar. ProfileIdentity uses Surface from useSurface() to render the photo child, explicitly passing mode display, view avatar, its schema, and data. The nested Surface inherits document scope, so the local reference resolves to the same registered photo renderer as a standalone Surface mounted at the definition URI. Passing a data-slot id (photo) also identifies the child within its parent. Do not flatten referenced schemas into anonymous fields before registration lookup.
+
+The profile also references an external phone definition. The demo registers shadcnSchemas in an InMemorySchemaFetchResolver; schemas unavailable locally can be fetched by URL. This is not a claim that the kit supports every JSON Schema keyword or automatically chooses a view for an agent.
+
+## Input and display
+
+Both use the same Surface component:
+
+```tsx
+import { Surface } from "@/components/surface"
+
+<Surface id={schemaId} mode="display" view="card" data={record} />
+
+<Surface id={schemaId} mode="input" view="edit" data={profile} onChange={setProfile} />
+```
+
+id is the schema's $id. mode is input or display. view selects a named presentation, implemented by a custom component or dynamic rendering. Schemas not registered locally are fetched from their URL. Use Surface in application UI or an agent chat renderer; this does not itself supply an agent integration.
+
+## Installation
+
+Requires React 19, Tailwind CSS v4, and shadcn/ui configured for Base UI. For a new application, run `npx shadcn@latest init --base base` first.
+
+Install with `npx shadcn@latest add rusl-labs/surface-shadcn/surface`.
+
+This adds renderers to components/surface and installs @rusl-labs/surface, @rusl-labs/surface-shadcn, the AJV validator, and the shadcn components they use.
+
+## Dynamic rendering as a fallback
+
+When a custom view is not provided, Surface can render from JSON Schema, with annotations to guide presentation. Use the kit's widgets or adapt them to match the application. Annotations are optional for custom components, not the starting requirement for every Surface view.
+
+The fallback demo deliberately uses a separate event schema, not the handcrafted profile. No event component is registered. A left-hand menu groups annotation-driven views by mode: display has identity, row, card, and byline; input has full, edit, and registration. The result appears on the right. Identity shows the event name and date; row places name, date, and location horizontally; card groups full information including the phone widget into sections; byline renders a short invitation. Full includes every event field and the phone input; edit focuses on title and description; registration focuses on the registration-open switch. All views share the same event data. See site/src/examples/event-views.tsx, event.schema.json, and event.annotation.json.
+
+An annotation is a JSON document for one schema. The schema remains the data contract; the annotation specifies presentation. Register schemas and annotations in components/surface/resolvers.ts. Surface matches an annotation to a schema by subject. A schema URL does not imply or discover an annotation URL.
+
+Annotation keys:
+
+- views: named presentations; other views inherit field settings from default.
+- fields: ordered fields; an entry with fields and no name is a section.
+- label and description: text for a field or section; an empty label hides it.
+- widget: field or section renderer; null clears an inherited widget.
+- input and display: mode-specific settings.
+- layout: props places the label beside the value; stack places it above.
+- direction: vertical or horizontal.
+- rest: append or omit properties not listed in the view.
+- template: text with {{field}} values from data.
+
+Set widget.name on a field using the kit's widget vocabulary. Widgets include input, email, textarea, date, datetime, tel, money, combobox, radio-group, toggle-group, switch, table, list, carousel, accordion, collapsible, code, media, avatar, tooltip, and separator. Consult the vocabulary for supported schemas and options.
+
+## Playground
+
+The final homepage section is an editable playground. CodeMirror with JSON language support provides schema, annotation, and data tabs on the left; a Surface preview with mode and view controls appears on the right. It starts with the event schema and data, plus a simplified annotation containing the default view. Valid JSON changes apply after a short debounce; parse and basic document-shape errors keep the last valid preview visible. Input-mode edits update the data document. Reset example restores the seeds. The playground is local browser state, not saved to a server.
+
+## References
+
+- [Homepage and live examples](https://surface-shadcn.rusl.com/)
+- [Kit repository and source examples](https://github.com/rusl-labs/surface-shadcn)
+- [Surface](https://github.com/rusl-labs/surface)
+- [Annotation reference](https://github.com/rusl-labs/surface/blob/HEAD/docs/annotation.md)
+- [Widget vocabulary](https://github.com/rusl-labs/surface-shadcn/blob/HEAD/schemas/rusl/surface.shadcn.schema.json)

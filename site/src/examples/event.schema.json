@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/event.json",
+  "type": "object",
+  "required": ["title", "date", "location"],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "date": { "type": "string", "format": "date" },
+    "location": { "type": "string" },
+    "description": { "type": "string" },
+    "phone": {
+      "$ref": "https://resources.rusl.com/resources/pragmatic/schemas/contact.scalars#/$defs/phone"
+    },
+    "registrationOpen": { "type": "boolean" }
+  }
+}

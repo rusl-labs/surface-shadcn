@@ -1,0 +1,97 @@
+{
+  "$kind": "https://resources.rusl.com/resources/rusl/schemas/surface.annotation",
+  "subject": "https://example.com/schemas/event.json",
+  "views": {
+    "default": {
+      "layout": "stack",
+      "fields": [
+        { "name": "title", "label": "Event" },
+        { "name": "date", "label": "When" },
+        { "name": "location", "label": "Where" },
+        { "name": "description", "label": "About", "widget": { "name": "textarea" } },
+        { "name": "phone", "label": "Contact phone", "widget": { "name": "tel" } },
+        { "name": "registrationOpen", "label": "Registration open", "widget": { "name": "switch" } }
+      ]
+    },
+    "identity": {
+      "rest": "omit",
+      "fields": [
+        { "name": "title", "label": "" },
+        { "name": "date", "label": "" }
+      ]
+    },
+    "row": {
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "",
+          "direction": "horizontal",
+          "fields": [
+            { "name": "title", "label": "" },
+            { "name": "date", "label": "" },
+            { "name": "location", "label": "" }
+          ]
+        }
+      ]
+    },
+    "card": {
+      "rest": "omit",
+      "fields": [
+        {
+          "label": "The event",
+          "fields": [
+            { "name": "title", "label": "" },
+            { "name": "description", "label": "", "widget": null }
+          ]
+        },
+        {
+          "label": "Plan your visit",
+          "widget": { "name": "separator" },
+          "fields": [
+            { "name": "date" },
+            { "name": "location" },
+            { "name": "phone" },
+            { "name": "registrationOpen" }
+          ]
+        }
+      ]
+    },
+    "byline": {
+      "rest": "omit",
+      "fields": [
+        { "template": "Join us for {{title}} · {{location}}" }
+      ]
+    },
+    "full": {
+      "rest": "omit",
+      "fields": [
+        { "name": "title", "description": "The name attendees will see." },
+        { "name": "description", "description": "Give attendees a reason to join." },
+        {
+          "label": "When and where",
+          "widget": { "name": "separator" },
+          "fields": [
+            { "name": "date" },
+            { "name": "location" },
+            { "name": "phone" }
+          ]
+        },
+        { "name": "registrationOpen" }
+      ]
+    },
+    "edit": {
+      "rest": "omit",
+      "fields": [
+        { "name": "title", "description": "The name attendees will see." },
+        { "name": "description", "description": "Give attendees a reason to join." }
+      ]
+    },
+    "registration": {
+      "rest": "omit",
+      "fields": [
+        { "template": "Manage registration for {{title}}" },
+        { "name": "registrationOpen", "description": "Turn off to close registration without changing the event." }
+      ]
+    }
+  }
+}

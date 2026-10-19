@@ -13,6 +13,9 @@
     "role": { "type": "string", "enum": ["Design", "Engineering", "Product"] },
     "bio": { "type": "string", "maxLength": 280 },
     "available": { "type": "boolean" },
+    "photo": { "$ref": "#/$defs/photo" }
+  },
+  "$defs": {
     "photo": {
       "type": "object",
       "additionalProperties": false,

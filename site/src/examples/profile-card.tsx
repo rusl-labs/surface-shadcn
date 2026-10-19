@@ -1,53 +1,30 @@
 import type { SurfaceProps } from "@rusl-labs/surface";
 import { isRecord, parsePhoneValue } from "@rusl-labs/surface-shadcn";
 import { Mail, Phone } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileIdentity } from "./profile-components";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 
 function text(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter((part) => part.length > 0)
-    .slice(0, 2)
-    .map((part) => part[0]!.toUpperCase())
-    .join("");
-}
-
-/** Replaces the annotation's `card` view in display mode. */
-export function ProfileCard({ data }: SurfaceProps) {
+/** A handcrafted display view registered for the profile type. */
+export function ProfileCard(props: SurfaceProps) {
+  const { data } = props;
   if (!isRecord(data)) return null;
-  const name = text(data.name);
   const email = text(data.email);
-  const photo = isRecord(data.photo) ? data.photo : {};
   const phone = parsePhoneValue(data.phone);
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <Avatar size="lg">
-            {text(photo.url) ? (
-              <AvatarImage src={text(photo.url)} alt={text(photo.alt)} />
-            ) : null}
-            <AvatarFallback>{initials(name)}</AvatarFallback>
-          </Avatar>
-          <div className="grid gap-1">
-            <CardTitle>{name}</CardTitle>
-            <CardDescription>{text(data.role)}</CardDescription>
-          </div>
-        </div>
+        <ProfileIdentity {...props} />
         {data.available === true ? (
           <CardAction>
             <Badge variant="secondary">Available</Badge>
@@ -55,6 +32,7 @@ export function ProfileCard({ data }: SurfaceProps) {
         ) : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
+        <p className="text-sm text-muted-foreground">{text(data.bio)}</p>
         <a
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
           href={`mailto:${email}`}
