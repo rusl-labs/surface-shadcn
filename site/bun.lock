@@ -9,7 +9,7 @@
         "@codemirror/view": "^6.43.11",
         "@fontsource-variable/geist": "^5.3.0",
         "@fontsource-variable/geist-mono": "^5.3.0",
-        "@rusl-labs/surface": "0.1.1",
+        "@rusl-labs/surface": "file:../../surface/packages/core",
         "@rusl-labs/surface-ajv": "0.1.0",
         "@uiw/codemirror-extensions-langs": "^4.25.11",
         "@uiw/react-codemirror": "^4.25.11",
@@ -350,7 +350,7 @@
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.63.5", "", { "os": "win32", "cpu": "x64" }, "sha512-ypfC34F3RKXvCXBglGqGMsUSMKlgwd1HX9AOAlx9RoZZ6GaI42YHVeKpzg3JG+wpBUJYTG+NNZhqbDWL8tBZkw=="],
 
-    "@rusl-labs/surface": ["@rusl-labs/surface@0.1.1", "", { "peerDependencies": { "react": ">=18.2.0 <20" } }, "sha512-hDE3IdzNUiMEDHbuWs14B9sCfTGCuXtaRoYPTHu8PwL7ZgvmU4ZHeGt5lhtXgRg2tTDtzqPJ0e0DbFR+q5rm+Q=="],
+    "@rusl-labs/surface": ["@rusl-labs/surface@file:../../surface/packages/core", { "peerDependencies": { "react": ">=18.2.0 <20" } }],
 
     "@rusl-labs/surface-ajv": ["@rusl-labs/surface-ajv@0.1.0", "", { "peerDependencies": { "@rusl-labs/surface": "^0.1.0", "ajv": "^8.12.0", "ajv-formats": "^3.0.0" } }, "sha512-TM2ax+31hNuaiyj7fzlX6rR+UlooujNyGg5C6nl8HV+8P1AOryRuuGSjcElWKHZzW7UOkEtWeDjBnRf4lSJITg=="],
 

@@ -41,6 +41,14 @@ export default defineConfig({
   // GitHub Pages serves a project site under /<repo>/; the Pages workflow sets this.
   base: process.env.SITE_BASE ?? "/",
   plugins: [resolveFromSite(), react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      input: {
+        home: fileURLToPath(new URL("./index.html", import.meta.url)),
+        playground: fileURLToPath(new URL("./playground/index.html", import.meta.url)),
+      },
+    },
+  },
   resolve: {
     // Same layout as an app after `shadcn add`: the kit at @/components/surface,
     // shadcn primitives at @/components/ui. The more specific alias must come first.
@@ -64,6 +72,6 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 3200,
     strictPort: true,
-    fs: { allow: [fileURLToPath(new URL("..", import.meta.url))] },
+    fs: { allow: [fileURLToPath(new URL("..", import.meta.url)), fileURLToPath(new URL("../../surface/packages/core", import.meta.url))] },
   },
 });

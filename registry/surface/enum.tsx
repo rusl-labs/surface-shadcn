@@ -75,7 +75,7 @@ export function EnumInput({ data }: SurfaceProps): ReactElement {
           id={fs.controlId}
           className="w-full"
           aria-label={
-            fs.showLabels && fs.label ? undefined : fs.label || "Value"
+            fs.showLabels && fs.label ? undefined : fs.accessibleLabel || "Value"
           }
           aria-invalid={fs.invalid || undefined}
           aria-describedby={fs.describedBy}

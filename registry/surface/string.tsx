@@ -77,7 +77,7 @@ export function StringInput({ data }: SurfaceProps): ReactElement {
         aria-label={
           fs.showLabels && fs.label.length > 0
             ? undefined
-            : fs.label || placeholder || "Value"
+            : fs.accessibleLabel || "Value"
         }
         value={value}
         required={fs.required}

@@ -76,10 +76,10 @@ function SwitchField({
   const offLabel = optionText(off);
   const onLabel = optionText(on);
   const switchName = named
-    ? fs.label.length > 0
-      ? `${fs.label}: ${offLabel} or ${onLabel}`
+    ? fs.accessibleLabel.length > 0
+      ? `${fs.accessibleLabel}: ${offLabel} or ${onLabel}`
       : `${offLabel} or ${onLabel}`
-    : fs.label || "Value";
+    : fs.accessibleLabel || "Value";
   const control = (
     <Switch
       id={fs.controlId}

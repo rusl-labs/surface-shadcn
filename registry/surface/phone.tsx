@@ -242,7 +242,7 @@ export function PhoneInput({ data }: SurfaceProps): ReactElement {
     "aria-label":
       field.showLabels && field.label.length > 0
         ? undefined
-        : field.label || placeholder || "Phone",
+        : field.accessibleLabel || "Phone",
     value: text,
     required: field.required,
     readOnly: field.readOnly,
@@ -284,7 +284,7 @@ export function PhoneInput({ data }: SurfaceProps): ReactElement {
             <ComboboxTrigger
               render={
                 <InputGroupButton
-                  aria-label={`${field.label || "Phone"} country`}
+                  aria-label={`${field.accessibleLabel || "Phone"} country`}
                 />
               }
             >

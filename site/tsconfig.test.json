@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/components/surface/*": ["../registry/surface/*"],
+      "@/*": ["../example/src/*"],
+      "@rusl-labs/surface-shadcn": ["../src/index.ts"],
+      "@rusl-labs/surface": ["./node_modules/@rusl-labs/surface"],
+      "react": ["./node_modules/react"],
+      "react/*": ["./node_modules/react/*"],
+      "react-dom": ["./node_modules/react-dom"],
+      "react-dom/*": ["./node_modules/react-dom/*"]
+    }
+  }
+}

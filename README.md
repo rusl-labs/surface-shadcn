@@ -45,8 +45,15 @@ An annotation names views and lists each view's fields, labels, sections, and wi
 
 ## Development
 
+This branch uses the sibling `../surface/packages/core` as a local `file:` dependency
+in the root, example, and site. It needs the standalone-presentation patch; the
+published core `0.1.1` does not contain it. Build core first:
+
 ```sh
+(cd ../surface/packages/core && bun run build)
 bun install
+bun run site:install
+bun run check:runtime
 bun run dev              # playground at http://127.0.0.1:3100
 bun run check            # typecheck, tests, package, registry, and playground builds
 bun run test:next        # install the registry into a fresh Next.js app and build it
@@ -60,7 +67,16 @@ bun run site:install
 bun run site:dev         # http://127.0.0.1:3200
 ```
 
+See [`site/PLAYGROUND.md`](site/PLAYGROUND.md) for the page-local agent tools,
+diagnostics, dependency refresh instructions, and remaining label-policy limitation.
+After rebuilding local Surface, reinstall root and site with `bun install --force`
+and restart Vite with `--force`; `check:runtime` checks for stale installed builds.
+
 ## Releasing
+
+**Before deploying or publishing this branch**, replace the local Surface dependency
+with a released or reproducibly pinned distributable containing the patch. CI does
+not have the sibling checkout. The current dependency setup is for local iteration.
 
 1. Set the new version in `package.json` and in the `@rusl-labs/surface-shadcn@…` pin in `registry.json`. They must match.
 2. Merge to the default branch, then push the tag `vX.Y.Z` for that version. [`publish.yml`](.github/workflows/publish.yml) checks the versions, runs `bun run check`, and publishes to npm with trusted publishing.

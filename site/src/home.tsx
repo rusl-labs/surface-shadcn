@@ -127,7 +127,8 @@ const widgets: readonly {
   { names: ["accordion", "collapsible"], on: "object", renders: "Accordion, Collapsible" },
   { names: ["code"], on: "object", renders: "CodeMirror" },
   { names: ["media", "avatar"], on: "image", renders: "Card, Avatar" },
-  { names: ["tooltip", "separator"], on: "field, section", renders: "Tooltip, Separator" },
+  { names: ["tooltip"], on: "field", renders: "Tooltip" },
+  { names: ["separator"], on: "heading, section", renders: "Separator (local Surface patch)" },
 ];
 
 function GitHubIcon() {

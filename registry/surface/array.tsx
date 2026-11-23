@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import type { ReactElement } from "react";
 import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
-import { FieldScope, isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
+import { FieldScope, isRecord, seedValue, useFieldState } from "@rusl-labs/surface-shadcn";
 import { ItemActionButton } from "./actions";
 import {
   FieldDescription,
@@ -63,7 +63,9 @@ export function ArrayInput({ data }: SurfaceProps): ReactElement {
   const addItem = (): void => {
     if (dataApi === undefined) return;
     keysRef.current = [...keysRef.current, keySeed.current++];
-    dataApi.setData([...list, undefined]);
+    // Materialize the new value before a controlled consumer serializes it.
+    // An undefined array slot becomes null in JSON, which is not an empty object.
+    dataApi.setData([...list, seedValue(items)]);
   };
 
   return (

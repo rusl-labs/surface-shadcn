@@ -17,6 +17,8 @@ import {
   type SurfaceValidator,
 } from "@rusl-labs/surface";
 import { createAjvValidator } from "@rusl-labs/surface-ajv";
+import Ajv2020 from "ajv/dist/2020";
+import widgetSchema from "../schemas/rusl/surface.shadcn.schema.json";
 import { createShadcnKit } from "../registry/surface/kit";
 import { shadcnSchemas } from "./schemas";
 
@@ -27,6 +29,7 @@ function mount(
     labels?: boolean;
     entry?: SurfaceProps["entry"];
     validator?: SurfaceValidator;
+    jsonRoundTrip?: boolean;
   } = {},
 ) {
   const saved: unknown[] = [];
@@ -46,7 +49,7 @@ function mount(
         id="urn:surface:mechanics"
         schema={schema}
         data={data}
-        onChange={setData}
+        onChange={(next) => setData(options.jsonRoundTrip ? JSON.parse(JSON.stringify(next)) : next)}
         onSubmit={({ data }) => {
           saved.push(data);
         }}
@@ -63,6 +66,73 @@ function mount(
   };
 }
 afterEach(cleanup);
+
+test.each([
+  { name: "text", schema: { type: "string", title: "Warranty subject" }, widget: { name: "input", placeholder: "Enter a subject" }, value: "Paint peeling", accessibleName: "Warranty subject" },
+  { name: "textarea", schema: { type: "string", title: "Issue description" }, widget: { name: "textarea", placeholder: "Describe the issue" }, value: "The tap leaks", accessibleName: "Issue description" },
+  { name: "email", schema: { type: "string", format: "email", title: "Contact email" }, widget: { name: "email", placeholder: "Enter an address" }, value: "person@example.com", accessibleName: "Contact email" },
+  { name: "phone", schema: { type: "string", title: "Contact phone" }, widget: { name: "tel", placeholder: "Enter a number" }, value: "+14155550100", accessibleName: "Contact phone" },
+])("empty visible label retains the semantic accessible name for $name", async ({ schema, widget, value, accessibleName }) => {
+  const screen = mount(schema, "", { entry: { label: "", widget } });
+  const input = await screen.findByRole("textbox");
+  expect(screen.container.querySelector("label")).toBeNull();
+  expect(input.getAttribute("aria-label")).toBe(accessibleName);
+  fireEvent.change(input, { target: { value } });
+  expect(screen.getByRole("textbox", { name: accessibleName })).toBe(input);
+  expect(input.getAttribute("aria-label")).toBe(accessibleName);
+});
+
+test.each([
+  { name: "top-level", widget: { placeholder: "Describe the issue" }, expected: "Describe the issue" },
+  { name: "nested options", widget: { options: { placeholder: "More detail" } }, expected: "More detail" },
+  { name: "top-level precedence", widget: { placeholder: "Primary hint", options: { placeholder: "Other hint" } }, expected: "Primary hint" },
+  { name: "explicit empty override", widget: { placeholder: "", options: { placeholder: "Other hint" } }, expected: "" },
+  { name: "no placeholder", widget: {}, expected: null },
+])("textarea placeholder supports $name without changing its name or value", async ({ widget, expected }) => {
+  const treatment = { name: "textarea", ...widget, options: { rows: 4, ...widget.options } };
+  const ajv = new Ajv2020({ strict: false, validateFormats: false });
+  ajv.addSchema(widgetSchema);
+  const validate = ajv.getSchema(`${widgetSchema.$id}#/$defs/textarea`)!;
+  const screen = mount({ type: "string", title: "Issue description", maxLength: 200 }, "", { entry: { label: "", widget: treatment } });
+  const input = await screen.findByRole("textbox", { name: "Issue description" }) as HTMLTextAreaElement;
+  expect(input.tagName).toBe("TEXTAREA");
+  expect(input.getAttribute("placeholder")).toBe(expected);
+  expect(validate(treatment)).toBe(true);
+  expect(input.getAttribute("rows")).toBe("4");
+  expect(input.getAttribute("maxLength")).toBe("200");
+  expect(screen.container.querySelector("label")).toBeNull();
+  expect(screen.data()).toBe("");
+  fireEvent.change(input, { target: { value: "First line\nSecond line" } });
+  expect(screen.data()).toBe("First line\nSecond line");
+  expect(screen.getByRole("textbox", { name: "Issue description" })).toBe(input);
+});
+
+test("empty enum labels retain the semantic name after a populated value changes", async () => {
+  const screen = mount({ type: "string", title: "Priority", enum: ["low", "high"] }, "low", { entry: { label: "" } });
+  const control = await screen.findByRole("combobox", { name: "Priority" });
+  act(() => screen.replace("high"));
+  expect(screen.getByRole("combobox", { name: "Priority" })).toBe(control);
+});
+
+test("label-less combobox keeps its field name instead of the selected value", async () => {
+  const screen = mount({ type: "string", title: "Issue type", enum: ["paint", "plumbing"] }, "plumbing", {
+    entry: { label: "", widget: { name: "combobox", placeholder: "Select issue type" } },
+  });
+  const control = await screen.findByRole("combobox");
+  expect(screen.getByRole("combobox", { name: "Issue type" })).toBe(control);
+  act(() => screen.replace("paint"));
+  expect(screen.getByRole("combobox", { name: "Issue type" })).toBe(control);
+});
+
+test("label-less boolean retains its field name rather than generic Value", async () => {
+  const screen = mount({ type: "boolean", title: "Registration open" }, false, {
+    entry: { label: "", widget: { name: "switch" } },
+  });
+  const control = await screen.findByRole("switch");
+  expect(control.getAttribute("aria-label")).toBe("Registration open");
+  fireEvent.click(control);
+  expect(screen.getByRole("switch", { name: "Registration open" })).toBe(control);
+});
 
 test("hidden labels retain help and accessible description linkage", async () => {
   const screen = mount({ type: "string" }, "Alex", {
@@ -101,6 +171,40 @@ test("incomplete numeric drafts cannot save stale canonical values and Reset cle
   });
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() => expect(screen.saved).toEqual([{ count: 100 }]));
+});
+
+test("adding object items survives a JSON-controlled consumer without producing null", async () => {
+  const screen = mount({
+    type: "array",
+    items: {
+      type: "object",
+      required: ["subject", "description", "type"],
+      properties: {
+        subject: { type: "string", minLength: 1 },
+        description: { type: "string", minLength: 1 },
+        type: { type: "string", enum: ["appliance", "plumbing"] },
+        cause: { type: "string" },
+      },
+    },
+  }, [], { jsonRoundTrip: true, entry: { addLabel: "Add issue" } });
+  fireEvent.click(await screen.findByRole("button", { name: "Add issue" }));
+  const subject = await screen.findByRole("textbox", { name: "subject" });
+  expect(screen.queryByText(/Expected an object/)).toBeNull();
+  expect(screen.data()).toEqual([{ subject: "", description: "" }]);
+  fireEvent.change(subject, { target: { value: "Leaking tap" } });
+  fireEvent.click(screen.getByRole("button", { name: "Add issue" }));
+  await waitFor(() => expect(screen.getAllByRole("textbox", { name: "subject" }).length).toBe(2));
+  expect(screen.data()).toEqual([{ subject: "Leaking tap", description: "" }, { subject: "", description: "" }]);
+});
+
+test("adding an object item does not coerce an existing explicit null", async () => {
+  const screen = mount({ type: "array", items: { type: "object", properties: { subject: { type: "string" } } } }, [null], {
+    jsonRoundTrip: true, entry: { addLabel: "Add issue" },
+  });
+  fireEvent.click(await screen.findByRole("button", { name: "Add issue" }));
+  await screen.findByRole("button", { name: "Remove item 2" });
+  expect(screen.data()).toEqual([null, {}]);
+  expect(screen.getAllByText(/Expected an object/).length).toBe(1);
 });
 
 test("array removal preserves a surviving invalid draft and projects its new error path", async () => {

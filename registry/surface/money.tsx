@@ -413,7 +413,7 @@ export function MoneyInput({ data }: SurfaceProps): ReactElement {
           aria-label={
             chromeField.showLabels && chromeField.label
               ? undefined
-              : chromeField.label || "Amount"
+              : chromeField.accessibleLabel || "Amount"
           }
           value={draft}
           placeholder={placeholder}

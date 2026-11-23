@@ -45,7 +45,7 @@ export function NumberInput({ data }: SurfaceProps): ReactElement {
         type="text"
         inputMode="decimal"
         id={fs.controlId}
-        aria-label={fs.showLabels && fs.label ? undefined : fs.label || "Value"}
+        aria-label={fs.showLabels && fs.label ? undefined : fs.accessibleLabel || "Value"}
         value={text}
         required={fs.required}
         readOnly={fs.readOnly}

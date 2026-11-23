@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactElement, ReactNode } from "react";
-import { useSurface, type FieldDirection } from "@rusl-labs/surface";
+import { useSurface, type AnnotationWidget, type FieldDirection } from "@rusl-labs/surface";
 import type { FieldState } from "@rusl-labs/surface-shadcn";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { widgetString } from "./widget";
+import { Separator } from "@/components/ui/separator";
 
 type Orientation = "vertical" | "horizontal";
 
@@ -125,6 +126,18 @@ export function SectionChrome({
       {children}
     </FieldSet>
   );
+}
+
+/** Structural separator, shared by standalone headings and populated sections. */
+export function SeparatorChrome({ widget }: { widget: AnnotationWidget | undefined }): ReactElement {
+  const orientation = widgetString(widget, "orientation") === "vertical" ? "vertical" : "horizontal";
+  const caption = widgetString(widget, "label");
+  const line = <Separator orientation={orientation} aria-label={caption} className={orientation === "vertical" ? "min-h-6" : caption ? "min-w-0 flex-1" : undefined} />;
+  return caption ? (
+    <div className="flex items-center gap-3 self-stretch">
+      <span className="shrink-0 text-xs text-muted-foreground">{caption}</span>{line}
+    </div>
+  ) : line;
 }
 
 /** Standalone annotation `heading` — a legend with no controls of its own. */

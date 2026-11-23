@@ -33,7 +33,7 @@ export function EmailInput({ data }: SurfaceProps): ReactElement {
         aria-label={
           fs.showLabels && fs.label.length > 0
             ? undefined
-            : fs.label || placeholder || "Email"
+            : fs.accessibleLabel || "Email"
         }
         value={value}
         required={fs.required}

@@ -65,7 +65,7 @@
   "devDependencies": {
     "@codemirror/view": "^6.43.11",
     "@happy-dom/global-registrator": "^20.0.0",
-    "@rusl-labs/surface": "0.1.1",
+    "@rusl-labs/surface": "file:../surface/packages/core",
     "@rusl-labs/surface-ajv": "0.1.0",
     "@tailwindcss/vite": "^4.1.0",
     "@testing-library/react": "^16.3.0",

@@ -279,13 +279,14 @@
     },
     "textarea": {
       "title": "Multiline text",
-      "description": "Edits a string with the consuming application's local shadcn Textarea. Display mode renders the text without changing its wire value.",
+      "description": "Edits a string with the consuming application's local shadcn Textarea. Top-level placeholder wins over options.placeholder, including an empty string. Display mode renders the text without changing its wire value.",
       "type": "object",
       "properties": {
         "name": { "const": "textarea" },
         "$kind": {
           "const": "https://resources.rusl.com/resources/rusl/schemas/surface.shadcn#/$defs/textarea"
         },
+        "placeholder": { "type": "string" },
         "options": {
           "type": "object",
           "properties": {
@@ -293,7 +294,8 @@
               "type": "integer",
               "minimum": 1,
               "description": "Visible text rows; does not constrain the string length."
-            }
+            },
+            "placeholder": { "type": "string" }
           },
           "additionalProperties": false
         }

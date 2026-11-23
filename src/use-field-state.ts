@@ -19,6 +19,8 @@ export interface FieldState {
   readonly controlId: string;
   /** Resolved label text (annotation entry, view, schema title, or name). */
   readonly label: string;
+  /** Semantic name, independent of visible label/placeholder/value. May be empty for an anonymous root. */
+  readonly accessibleLabel: string;
   /** Resolved description text, or `""` when the node has none. */
   readonly description: string;
   /** False when an ancestor suppressed labels (e.g. a table cell). */
@@ -64,6 +66,15 @@ export function useFieldState(): FieldState {
       view: surface.view,
     });
 
+  const boundName = surface.dataPath?.at(-1);
+  const viewLabel = resolveLabel({
+    id: "", annotation: surface.annotation, coordinate: surface.coordinate, view: surface.view,
+  });
+  const accessibleLabel = label.trim() || viewLabel.trim() ||
+    (typeof schema?.title === "string" ? schema.title.trim() : "") ||
+    (typeof boundName === "string" ? boundName : typeof boundName === "number" ? `Item ${boundName + 1}` : "") ||
+    resolveLabel({ id: surface.id ?? "", schema });
+
   const description =
     surface.helpers?.description() ??
     resolveDescription({
@@ -97,6 +108,7 @@ export function useFieldState(): FieldState {
   return {
     controlId,
     label,
+    accessibleLabel,
     description,
     showLabels,
     required: scope.required,

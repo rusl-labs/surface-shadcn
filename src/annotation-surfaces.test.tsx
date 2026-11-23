@@ -1,11 +1,15 @@
 import { afterEach, expect, test } from "bun:test";
 import { cleanup, render, waitFor } from "@testing-library/react";
+import { Fragment } from "react";
+import { Separator } from "../example/src/components/ui/separator";
 import {
   createSurfaceUi,
   InMemoryAnnotationResolver,
   InMemorySchemaFetchResolver,
   type AnnotationDocument,
   type Schema,
+  type SurfaceProps,
+  useSurface,
 } from "@rusl-labs/surface";
 import { createAjvValidator } from "@rusl-labs/surface-ajv";
 import { createShadcnKit } from "../registry/surface/kit";
@@ -170,6 +174,68 @@ afterEach(cleanup);
 function viewNames(document: AnnotationDocument): string[] {
   return Object.keys(document.views ?? {});
 }
+
+test.each([
+  { populated: false, mode: "input" }, { populated: true, mode: "input" },
+  { populated: false, mode: "display" }, { populated: true, mode: "display" },
+] as const)("local core renders standalone and section separators (populated=$populated, mode=$mode)", async ({ populated, mode }) => {
+  const id = "https://example.test/separator-characterization";
+  const separator = populated
+    ? { label: "", widget: { name: "separator" }, fields: [{ name: "cause" }] }
+    : { label: "", widget: { name: "separator" } };
+  const screen = mount({
+    schema: { $id: id, type: "object", properties: { issues: { type: "array", items: { type: "object", properties: { subject: { type: "string" }, cause: { type: "string" } } } } } },
+    annotation: { subject: id, views: { default: { fields: [{ name: "issues", items: { fields: [{ name: "subject" }, separator] } }] } } },
+    data: { issues: [{ subject: "Tap", cause: "Unknown" }, { subject: "Paint", cause: "Unknown" }] },
+    mode, view: "default",
+  });
+  await waitFor(() => expect(screen.container.querySelectorAll('[data-slot="separator"]').length).toBe(2));
+});
+
+test.each(["input", "display"] as const)("separator options and unknown heading fallback in %s", async mode => {
+  const id = "https://example.test/separator-options";
+  const screen = mount({
+    schema: { $id: id, type: "object", properties: { name: { type: "string" } } },
+    annotation: { subject: id, views: { default: { fields: [
+      { label: "", widget: { name: "separator", orientation: "vertical", options: { orientation: "horizontal", label: "Divider" } } },
+      { label: "Details", widget: { name: "separator", options: { label: "Section divider" } }, fields: [{ name: "name" }] },
+      { label: "Custom heading", widget: { name: "unknown-treatment" } },
+      { label: "", widget: { name: "separator" }, fields: [{ name: "unused", omit: true }] },
+    ] } } },
+    data: { name: "Alex" }, mode, view: "default",
+  });
+  const separator = await screen.findByRole("separator", { name: "Divider" });
+  expect(separator.getAttribute("aria-orientation")).toBe("vertical");
+  expect(screen.getByRole("separator", { name: "Section divider" })).toBeTruthy();
+  expect(screen.getByText("Custom heading")).toBeTruthy();
+  expect(screen.container.querySelectorAll('[data-slot="separator"]').length).toBe(2);
+});
+
+// Verified custom-array alternative for the focused separator guidance.
+function DividedItems({ data }: SurfaceProps) {
+  const { Surface, schema } = useSurface();
+  const items = schema?.items as Schema | undefined;
+  if (!Surface || !items) return null;
+  const rows = Array.isArray(data) ? data : [];
+  return <div data-testid="divided-items">{rows.map((row, index) => <Fragment key={index}>
+    {index > 0 && <Separator />}
+    <Surface id={String(index)} schema={items} data={row} mode="display" view="default" />
+  </Fragment>)}</div>;
+}
+
+test.each([0, 1, 2, 3])("custom array view puts separators only between %i items", async (count) => {
+  const schema = { $id: "https://example.test/divided-array", type: "array", items: { type: "object", properties: { subject: { type: "string" } } } };
+  const { Surface } = createSurfaceUi({
+    schemaResolver: new InMemorySchemaFetchResolver({ [schema.$id]: schema }),
+    validator: createAjvValidator(),
+    kit: createShadcnKit({ resolvers: [{ key: "array", mode: "display", view: "divided", component: DividedItems }] }),
+  });
+  const screen = render(<Surface id={schema.$id} data={Array.from({ length: count }, (_, index) => ({ subject: `Issue ${index}` }))} mode="display" view="divided" />);
+  const body = await screen.findByTestId("divided-items");
+  if (count) await screen.findByText(`Issue ${count - 1}`);
+  expect(body.querySelectorAll('[data-slot="separator"]').length).toBe(Math.max(0, count - 1));
+  expect(body.lastElementChild?.getAttribute("data-slot")).not.toBe("separator");
+});
 
 test("shipped Product and Contact card annotations name the six required views", () => {
   for (const document of [productAnnotation, contactAnnotation]) {

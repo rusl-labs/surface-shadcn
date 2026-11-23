@@ -83,6 +83,7 @@ export function ComboboxInput({ data }: SurfaceProps): ReactElement {
       >
         <ComboboxTrigger
           id={fs.controlId}
+          aria-label={fs.showLabels && fs.label ? undefined : fs.accessibleLabel || "Value"}
           render={
             <Button
               variant="outline"
@@ -135,6 +136,7 @@ export function RadioGroupInput({ data }: SurfaceProps): ReactElement {
   return (
     <FieldChrome state={fs}>
       <RadioGroup
+        aria-label={fs.accessibleLabel || "Options"}
         value={selected >= 0 ? String(selected) : ""}
         disabled={fs.readOnly}
         aria-invalid={fs.invalid || undefined}
@@ -178,6 +180,7 @@ export function ToggleGroupInput({ data }: SurfaceProps): ReactElement {
   return (
     <FieldChrome state={fs}>
       <ToggleGroup
+        aria-label={fs.accessibleLabel || "Options"}
         value={selected >= 0 ? [String(selected)] : []}
         disabled={fs.readOnly}
         variant={variant}

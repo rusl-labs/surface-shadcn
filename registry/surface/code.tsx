@@ -130,7 +130,7 @@ export function CodeInput({ data }: SurfaceProps): ReactElement {
           aria-label={
             field.showLabels && field.label.length > 0
               ? field.label
-              : field.label || "Code"
+              : field.accessibleLabel || "Code"
           }
           onChange={(text) => {
             setTouched(true);
@@ -167,7 +167,7 @@ export function CodeDisplay({ data }: SurfaceProps): ReactElement {
           extensions={extensions}
           basicSetup={{ foldGutter: false, highlightActiveLine: false }}
           aria-label={
-            fs.showLabels && fs.label.length > 0 ? fs.label : fs.label || "Code"
+            fs.accessibleLabel || "Code"
           }
         />
       </div>

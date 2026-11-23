@@ -41,13 +41,13 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field";
-import { Separator } from "@/components/ui/separator";
 import {
   BannerChrome,
   BlockChrome,
   FieldChrome,
   HeadingChrome,
   SectionChrome,
+  SeparatorChrome,
   SpanChrome,
   TemplateChrome,
 } from "./chrome";
@@ -68,6 +68,14 @@ interface RenderCtx {
 
 function sectionWidgetName(child: FieldChild): string | undefined {
   return child.kind === "section" ? child.widget?.name : undefined;
+}
+
+function PresentationHeading({ child }: { child: FieldChild & { kind: "heading" } }): ReactNode {
+  if (child.widget?.name !== "separator") return child.label ? <HeadingChrome label={child.label} /> : null;
+  return <div className="flex self-stretch flex-col gap-3">
+    <SeparatorChrome widget={child.widget} />
+    {child.label ? <HeadingChrome label={child.label} /> : null}
+  </div>;
 }
 
 function SectionCollapsible({
@@ -277,7 +285,7 @@ function InputBody({
             );
             return sectionWidgetName(child) === "separator" ? (
               <div key={child.key} className="flex flex-col gap-3">
-                <Separator />
+                <SeparatorChrome widget={child.widget} />
                 {body}
               </div>
             ) : sectionWidgetName(child) === "collapsible" ? (
@@ -289,7 +297,7 @@ function InputBody({
             );
           }
           case "heading":
-            return <HeadingChrome key={child.key} label={child.label} />;
+            return <PresentationHeading key={child.key} child={child} />;
           case "template":
             return <TemplateChrome key={child.key} text={child.text} />;
           case "block":
@@ -454,7 +462,7 @@ function DisplayBody({
         blocks.push(
           widget === "separator" ? (
             <div key={child.key} className="flex flex-col gap-3">
-              <Separator />
+              <SeparatorChrome widget={child.widget} />
               {sectionBody}
             </div>
           ) : widget === "collapsible" ? (
@@ -468,7 +476,7 @@ function DisplayBody({
         break;
       }
       case "heading":
-        blocks.push(<HeadingChrome key={child.key} label={child.label} />);
+        blocks.push(<PresentationHeading key={child.key} child={child} />);
         break;
       case "template":
         blocks.push(<TemplateChrome key={child.key} text={child.text} />);

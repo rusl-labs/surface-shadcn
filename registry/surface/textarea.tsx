@@ -5,10 +5,13 @@ import { useSurface, type SurfaceProps } from "@rusl-labs/surface";
 import { isRecord, useFieldState } from "@rusl-labs/surface-shadcn";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldChrome } from "./chrome";
+import { widgetOption } from "./widget";
 
 /**
  * Multiline string widget (`surface.shadcn#/$defs/textarea`, name `textarea`).
- * Rows come from `widget.options.rows`; the wire value is the raw string, so
+ * Rows come from `widget.options.rows`. Top-level placeholder wins over
+ * `widget.options.placeholder`, including an explicit empty string.
+ * The wire value is the raw string, so
  * display simply re-renders it with preserved whitespace.
  */
 export function TextareaInput({ data }: SurfaceProps): ReactElement {
@@ -23,13 +26,15 @@ export function TextareaInput({ data }: SurfaceProps): ReactElement {
       ? schema.maxLength
       : undefined;
   const value = typeof data === "string" ? data : "";
+  const placeholder = widgetOption(entry?.widget, "placeholder");
 
   return (
     <FieldChrome state={fs}>
       <Textarea
         id={fs.controlId}
-        aria-label={fs.showLabels && fs.label ? undefined : fs.label || "Value"}
+        aria-label={fs.showLabels && fs.label ? undefined : fs.accessibleLabel || "Value"}
         value={value}
+        placeholder={typeof placeholder === "string" ? placeholder : undefined}
         required={fs.required}
         readOnly={fs.readOnly}
         {...(rows !== undefined ? { rows } : {})}

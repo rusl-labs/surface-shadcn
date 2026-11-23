@@ -57,6 +57,7 @@ export function DateInput({ data }: SurfaceProps): ReactElement {
           render={
             <Button
               id={fs.controlId}
+              aria-label={fs.accessibleLabel || "Date"}
               variant="outline"
               disabled={fs.readOnly}
               aria-invalid={fs.invalid || undefined}
@@ -129,6 +130,7 @@ export function DateTimeInput({ data }: SurfaceProps): ReactElement {
             render={
               <Button
                 id={fs.controlId}
+                aria-label={fs.accessibleLabel || "Date"}
                 variant="outline"
                 disabled={fs.readOnly}
                 className="min-w-40 justify-start font-normal"
@@ -152,7 +154,7 @@ export function DateTimeInput({ data }: SurfaceProps): ReactElement {
           step={showSeconds ? 1 : 60}
           value={time}
           disabled={fs.readOnly}
-          aria-label="Time"
+          aria-label={fs.accessibleLabel ? `${fs.accessibleLabel} time` : "Time"}
           className="w-36"
           onChange={(event) => {
             const next = event.currentTarget.value;
